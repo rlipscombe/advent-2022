@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::fs::read_to_string;
 
 fn main() {
@@ -7,8 +8,7 @@ fn main() {
         .split("\n\n")
         .map(|s| s.split("\n").map(|x| x.parse::<i32>().unwrap()));
 
-    let mut sums: Vec<i32> = elves.map(|elf| elf.sum()).collect();
-    sums.sort_by(|a, b| b.cmp(a));
+    let sums: Vec<i32> = elves.map(|elf| elf.sum()).sorted().rev().collect();
     println!("{}", sums[0]);
     println!("{}", sums[0] + sums[1] + sums[2]);
 }
