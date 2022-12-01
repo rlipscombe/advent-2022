@@ -1,0 +1,39 @@
+# Calorie Counting
+
+```elixir
+Mix.install([{:kino, "~> 0.7.0"}])
+```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Input:")
+```
+
+## Part 1
+
+```elixir
+input = Kino.Input.read(input)
+
+input =
+  input
+  |> String.trim()
+  |> String.split("\n\n")
+  |> Enum.map(fn x ->
+    String.split(x, "\n")
+    |> Enum.map(&String.to_integer/1)
+  end)
+
+elves = input |> Enum.with_index(fn list, index -> {index + 1, list, Enum.sum(list)} end)
+
+elf = elves |> Enum.max_by(fn {_, _, sum} -> sum end)
+{_, _, sum} = elf
+sum
+```
+
+## Part 2
+
+```elixir
+top3 = Enum.sort(elves, fn {_, _, a}, {_, _, b} -> a > b end) |> Enum.take(3)
+Enum.reduce(top3, 0, fn {_, _, sum}, acc -> sum + acc end)
+```
