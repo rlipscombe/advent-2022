@@ -1,0 +1,63 @@
+# Rock Paper Scissors
+
+```elixir
+Mix.install([{:kino, "~> 0.7.0"}])
+```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Input:")
+```
+
+## Part 1
+
+```elixir
+input = Kino.Input.read(input)
+
+rounds =
+  input
+  |> String.trim()
+  |> String.split("\n")
+  |> Enum.map(
+    &(String.split(&1, " ")
+      |> Enum.map(fn
+        "A" -> :rock
+        "B" -> :paper
+        "C" -> :scissors
+        "X" -> :rock
+        "Y" -> :paper
+        "Z" -> :scissors
+      end))
+  )
+
+score_for_shape = fn
+  :rock -> 1
+  :paper -> 2
+  :scissors -> 3
+end
+
+who_won = fn
+  :rock, :paper -> :me
+  :paper, :rock -> :them
+  :scissors, :paper -> :them
+  :paper, :scissors -> :me
+  :rock, :scissors -> :them
+  :scissors, :rock -> :me
+  _, _ -> :draw
+end
+
+score_for_result = fn
+  :them -> 0
+  :draw -> 3
+  :me -> 6
+end
+
+scores =
+  Enum.map(rounds, fn [them, me] ->
+    result = who_won.(them, me)
+    score_for_shape.(me) + score_for_result.(result)
+  end)
+
+Enum.sum(scores)
+```
