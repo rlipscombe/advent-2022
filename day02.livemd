@@ -10,11 +10,13 @@ Mix.install([{:kino, "~> 0.7.0"}])
 input = Kino.Input.textarea("Input:")
 ```
 
+```elixir
+input = Kino.Input.read(input)
+```
+
 ## Part 1
 
 ```elixir
-input = Kino.Input.read(input)
-
 rounds =
   input
   |> String.trim()
@@ -52,6 +54,50 @@ score_for_result = fn
   :draw -> 3
   :me -> 6
 end
+
+scores =
+  Enum.map(rounds, fn [them, me] ->
+    result = who_won.(them, me)
+    score_for_shape.(me) + score_for_result.(result)
+  end)
+
+Enum.sum(scores)
+```
+
+## Part 2
+
+```elixir
+rounds =
+  input
+  |> String.trim()
+  |> String.split("\n")
+  |> Enum.map(
+    &(String.split(&1, " ")
+      |> Enum.map(fn
+        "A" -> :rock
+        "B" -> :paper
+        "C" -> :scissors
+        "X" -> :lose
+        "Y" -> :draw
+        "Z" -> :win
+      end))
+  )
+
+ensure_outcome = fn
+  shape, :draw -> shape
+  :rock, :lose -> :scissors
+  :rock, :win -> :paper
+  :paper, :lose -> :rock
+  :paper, :win -> :scissors
+  :scissors, :lose -> :paper
+  :scissors, :win -> :rock
+end
+
+rounds =
+  rounds
+  |> Enum.map(fn
+    [shape, desired_outcome] -> [shape, ensure_outcome.(shape, desired_outcome)]
+  end)
 
 scores =
   Enum.map(rounds, fn [them, me] ->
