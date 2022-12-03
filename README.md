@@ -2,7 +2,9 @@
 
 This year, I'll attempt to do at least some of the challenges in [Gleam](https://gleam.run).
 
-- Day 1: [awk](awk/day01.awk)
+- Day 1: [awk](awk/day01.awk), [Gleam](gleam/day01/), [Elixir Livebook](livebook/day01.livemd), [Rust](rust/day01/)
+- Day 2: [awk](awk/day02.awk), [Gleam](gleam/day02/), [Elixir Livebook](livebook/day03.livemd)
+- Day 3: [bash](bash/day03/), [Elixir Livebook](livebook/day03.livemd)
 
 ## Previous years
 
