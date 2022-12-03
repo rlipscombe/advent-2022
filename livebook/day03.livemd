@@ -1,0 +1,71 @@
+# Rucksack Reorganization
+
+```elixir
+Mix.install([{:kino, "~> 0.7.0"}])
+```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Input:")
+```
+
+## Part 1
+
+```elixir
+input = Kino.Input.read(input)
+
+rucksacks =
+  input
+  |> String.trim()
+  |> String.split("\n")
+  |> Enum.map(fn s ->
+    len = String.length(s)
+    n = div(len, 2)
+    {String.slice(s, 0, n), String.slice(s, n, n)}
+  end)
+
+Enum.map(rucksacks, fn {a, b} ->
+  hd(
+    MapSet.intersection(MapSet.new(String.to_charlist(a)), MapSet.new(String.to_charlist(b)))
+    |> MapSet.to_list()
+  )
+end)
+|> Enum.map(fn ch ->
+  case ch do
+    ch when ch >= ?a and ch <= ?z -> ch - ?a + 1
+    ch when ch >= ?A and ch <= ?Z -> ch - ?A + 1 + 26
+  end
+end)
+|> Enum.sum()
+```
+
+## Part 2
+
+```elixir
+rucksacks =
+  input
+  |> String.trim()
+  |> String.split("\n")
+  |> Enum.chunk_every(3)
+
+rucksacks
+|> Enum.map(fn [a, b, c] ->
+  a = String.to_charlist(a)
+  b = String.to_charlist(b)
+  c = String.to_charlist(c)
+
+  MapSet.new(a)
+  |> MapSet.intersection(MapSet.new(b))
+  |> MapSet.intersection(MapSet.new(c))
+  |> MapSet.to_list()
+  |> hd()
+end)
+|> Enum.map(fn ch ->
+  case ch do
+    ch when ch >= ?a and ch <= ?z -> ch - ?a + 1
+    ch when ch >= ?A and ch <= ?Z -> ch - ?A + 1 + 26
+  end
+end)
+|> Enum.sum()
+```
