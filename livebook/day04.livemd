@@ -13,10 +13,6 @@ input = Kino.Input.textarea("Input:")
 ```elixir
 input = Kino.Input.read(input)
 
-contains = fn a0..a1, b0..b1 ->
-  a0 >= b0 and a1 <= b1
-end
-
 data =
   input
   |> String.trim()
@@ -33,6 +29,10 @@ data =
 ## Part 1
 
 ```elixir
+contains = fn a0..a1, b0..b1 ->
+  a0 >= b0 and a1 <= b1
+end
+
 part1 = data |> Enum.count(fn {a, b} -> contains.(a, b) or contains.(b, a) end)
 ```
 
