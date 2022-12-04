@@ -24,19 +24,20 @@ rucksacks =
     n = div(len, 2)
     {String.slice(s, 0, n), String.slice(s, n, n)}
   end)
+```
+
+```elixir
+priority = fn
+  [ch] when ch >= ?a and ch <= ?z -> 1 + ch - ?a
+  [ch] when ch >= ?A and ch <= ?Z -> ch - ?A + 1 + 26
+end
 
 Enum.map(rucksacks, fn {a, b} ->
-  hd(
-    MapSet.intersection(MapSet.new(String.to_charlist(a)), MapSet.new(String.to_charlist(b)))
-    |> MapSet.to_list()
-  )
+  a = MapSet.new(String.to_charlist(a))
+  b = MapSet.new(String.to_charlist(b))
+  MapSet.intersection(a, b) |> MapSet.to_list()
 end)
-|> Enum.map(fn ch ->
-  case ch do
-    ch when ch >= ?a and ch <= ?z -> ch - ?a + 1
-    ch when ch >= ?A and ch <= ?Z -> ch - ?A + 1 + 26
-  end
-end)
+|> Enum.map(priority)
 |> Enum.sum()
 ```
 
