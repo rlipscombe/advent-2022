@@ -1,0 +1,47 @@
+# Camp Cleanup
+
+```elixir
+Mix.install([{:kino, "~> 0.7.0"}])
+```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Input:")
+```
+
+```elixir
+input = Kino.Input.read(input)
+
+contains = fn a0..a1, b0..b1 ->
+  a0 >= b0 and a1 <= b1
+end
+
+data =
+  input
+  |> String.trim()
+  |> String.split()
+  |> Enum.map(fn line ->
+    [_ | pairs] = Regex.run(~r/(\d+)-(\d+),(\d+)-(\d+)/, line)
+    [a0, a1, b0, b1] = pairs |> Enum.map(&String.to_integer/1)
+    {a0..a1, b0..b1}
+  end)
+
+:ok
+```
+
+## Part 1
+
+```elixir
+part1 = data |> Enum.count(fn {a, b} -> contains.(a, b) or contains.(b, a) end)
+```
+
+## Part 2
+
+```elixir
+overlaps = fn a0..a1, b0..b1 ->
+  a1 >= b0 and b1 >= a0
+end
+
+part2 = data |> Enum.count(fn {a, b} -> overlaps.(a, b) end)
+```
