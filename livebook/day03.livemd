@@ -52,21 +52,15 @@ rucksacks =
 
 rucksacks
 |> Enum.map(fn [a, b, c] ->
-  a = String.to_charlist(a)
-  b = String.to_charlist(b)
-  c = String.to_charlist(c)
+  a = MapSet.new(String.to_charlist(a))
+  b = MapSet.new(String.to_charlist(b))
+  c = MapSet.new(String.to_charlist(c))
 
-  MapSet.new(a)
-  |> MapSet.intersection(MapSet.new(b))
-  |> MapSet.intersection(MapSet.new(c))
+  a
+  |> MapSet.intersection(b)
+  |> MapSet.intersection(c)
   |> MapSet.to_list()
-  |> hd()
 end)
-|> Enum.map(fn ch ->
-  case ch do
-    ch when ch >= ?a and ch <= ?z -> ch - ?a + 1
-    ch when ch >= ?A and ch <= ?Z -> ch - ?A + 1 + 26
-  end
-end)
+|> Enum.map(priority)
 |> Enum.sum()
 ```
