@@ -19,24 +19,10 @@ instructions = instructions |> String.split("\n")
 
 ```elixir
 defmodule Stacks do
-  def new(stacks), do: stacks
-
-  def pop(stacks, from) do
-    Map.get_and_update(stacks, from, fn [crate | stack] -> {crate, stack} end)
-  end
-
-  def push(stacks, to, crate) do
-    Map.update(stacks, to, [crate], fn stack -> [crate | stack] end)
-  end
-end
-```
-
-```elixir
-defmodule StacksBuilder do
-  def build(stacks) do
+  def new(stacks) do
     stacks = Enum.reverse(stacks)
 
-    push_layers(stacks, %{}) |> Stacks.new()
+    push_layers(stacks, %{})
   end
 
   defp push_layers([layer | more], acc) do
@@ -71,7 +57,7 @@ end
 ```
 
 ```elixir
-stacks = StacksBuilder.build(stacks)
+stacks = Stacks.new(stacks)
 ```
 
 ```elixir
@@ -88,7 +74,7 @@ instructions =
 ```
 
 ```elixir
-defmodule Crane do
+defmodule Crane9000 do
   def run(stacks, [%{count: count, from: from, to: to} | instructions]) do
     run(execute(stacks, count, from, to), instructions)
   end
@@ -98,17 +84,56 @@ defmodule Crane do
   defp execute(stacks, 0, _, _), do: stacks
 
   defp execute(stacks, count, from, to) do
-    {crate, stacks} = Stacks.pop(stacks, from)
-    stacks = Stacks.push(stacks, to, crate)
+    {crate, stacks} = pop(stacks, from)
+    stacks = push(stacks, to, crate)
     execute(stacks, count - 1, from, to)
+  end
+
+  defp pop(stacks, from) do
+    Map.get_and_update(stacks, from, fn [crate | stack] -> {crate, stack} end)
+  end
+
+  defp push(stacks, to, crate) do
+    Map.update(stacks, to, [crate], fn stack -> [crate | stack] end)
   end
 end
 ```
 
 ```elixir
-final = Crane.run(stacks, instructions)
+part1 = Crane9000.run(stacks, instructions)
 ```
 
 ```elixir
-Map.to_list(final) |> Enum.sort() |> Enum.reduce("", fn {_, [top | _]}, acc -> acc <> <<top>> end)
+Map.to_list(part1) |> Enum.sort() |> Enum.reduce("", fn {_, [top | _]}, acc -> acc <> <<top>> end)
+```
+
+```elixir
+defmodule Crane9001 do
+  def run(stacks, [%{count: count, from: from, to: to} | instructions]) do
+    run(execute(stacks, count, from, to), instructions)
+  end
+
+  def run(stacks, []), do: stacks
+
+  defp execute(stacks, count, from, to) do
+    {crates, stacks} = pop(stacks, count, from)
+    push(stacks, to, crates)
+  end
+
+  defp pop(stacks, count, from) do
+    Map.get_and_update(stacks, from, fn stack -> Enum.split(stack, count) end)
+  end
+
+  defp push(stacks, to, crates) do
+    Map.update(stacks, to, crates, fn stack -> crates ++ stack end)
+  end
+end
+```
+
+```elixir
+part2 = Crane9001.run(stacks, instructions)
+```
+
+```elixir
+Map.to_list(part2) |> Enum.sort() |> Enum.reduce("", fn {_, [top | _]}, acc -> acc <> <<top>> end)
 ```
