@@ -1,0 +1,114 @@
+# Supply Stacks
+
+```elixir
+Mix.install([{:kino, "~> 0.7.0"}])
+```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Input:")
+```
+
+```elixir
+[stacks, instructions] = Kino.Input.read(input) |> String.trim_trailing() |> String.split("\n\n")
+stacks = stacks |> String.split("\n")
+{_, stacks} = List.pop_at(stacks, -1)
+instructions = instructions |> String.split("\n")
+```
+
+```elixir
+defmodule Stacks do
+  def new(stacks), do: stacks
+
+  def pop(stacks, from) do
+    Map.get_and_update(stacks, from, fn [crate | stack] -> {crate, stack} end)
+  end
+
+  def push(stacks, to, crate) do
+    Map.update(stacks, to, [crate], fn stack -> [crate | stack] end)
+  end
+end
+```
+
+```elixir
+defmodule StacksBuilder do
+  def build(stacks) do
+    stacks = Enum.reverse(stacks)
+
+    push_layers(stacks, %{}) |> Stacks.new()
+  end
+
+  defp push_layers([layer | more], acc) do
+    IO.puts("#{layer}")
+    acc = push_layer(layer, 1, acc)
+    push_layers(more, acc)
+  end
+
+  defp push_layers([], acc), do: acc
+
+  defp push_layer(<<"[", ch, "] ", rest::binary>>, index, acc) do
+    acc = push(ch, index, acc)
+    push_layer(rest, index + 1, acc)
+  end
+
+  defp push_layer(<<"[", ch, "]">>, index, acc) do
+    push(ch, index, acc)
+  end
+
+  defp push_layer(<<"    ", rest::binary>>, index, acc) do
+    push_layer(rest, index + 1, acc)
+  end
+
+  defp push_layer(<<"   ">>, index, acc) do
+    acc
+  end
+
+  defp push(crate, index, acc) do
+    Map.update(acc, index, [crate], fn stack -> [crate | stack] end)
+  end
+end
+```
+
+```elixir
+stacks = StacksBuilder.build(stacks)
+```
+
+```elixir
+re = ~r/^move (\d+) from (\d+) to (\d+)/
+
+instructions =
+  Enum.map(instructions, fn instr ->
+    [count, from, to] =
+      Regex.run(re, instr, capture: :all_but_first)
+      |> Enum.map(&String.to_integer/1)
+
+    %{count: count, from: from, to: to}
+  end)
+```
+
+```elixir
+defmodule Crane do
+  def run(stacks, [%{count: count, from: from, to: to} | instructions]) do
+    run(execute(stacks, count, from, to), instructions)
+  end
+
+  def run(stacks, []), do: stacks
+
+  defp execute(stacks, 0, _, _), do: stacks
+
+  defp execute(stacks, count, from, to) do
+    {crate, stacks} = Stacks.pop(stacks, from)
+    stacks = Stacks.push(stacks, to, crate)
+    execute(stacks, count - 1, from, to)
+  end
+end
+```
+
+```elixir
+final = Crane.run(stacks, instructions)
+```
+
+```elixir
+Map.to_list(final) |> Enum.sort() |> Enum.reduce("", fn {_, [top | _]}, acc -> acc <> <<top>> end)
+```

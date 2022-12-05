@@ -6,6 +6,7 @@ This year, I'll attempt to do at least some of the challenges in [Gleam](https:/
 - Day 2: [awk](awk/day02.awk), [Elixir Livebook](livebook/day02.livemd), [Gleam](gleam/day02/)
 - Day 3: [bash](bash/day03/), [Elixir Livebook](livebook/day03.livemd)
 - Day 4: [Elixir Livebook](livebook/day04.livemd), [Gleam](gleam/day04/), [F#](fsharp/day04/)
+- Day 5: [Elixir Livebook](livebook/day05.livemd)
 
 ## Previous years
 
