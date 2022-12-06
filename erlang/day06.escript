@@ -6,15 +6,16 @@ main([Count, Input]) ->
     ok.
 
 search(Count, List) ->
-    search(Count, List, 1).
+    search_1(Count, List, 1).
 
-search(Count, List, Index) when is_list(List), length(List) >= Count ->
-    search(Count, lists:split(Count, List), Index);
-search(Count, {Packet, Rest}, Index) ->
-    % io:format("# search ~B ~p ~p ~B~n", [Count, Packet, Rest, Index]),
+search_1(Count, List = [_ | Rest], Index) when is_list(List), length(List) >= Count ->
+    search_2(Count, lists:split(Count, List), Rest, Index).
+
+search_2(Count, {Packet, _}, Continue, Index) ->
+    % io:format("# search ~B ~p ~p ~B~n", [Count, Packet, Continue, Index]),
     case length(lists:uniq(Packet)) of
-	C when C =:= Count ->
-	    {ok, Index + Count - 1};
-	_ ->
-	    search(Count, tl(Packet) ++ Rest, Index + 1)
+        C when C =:= Count ->
+            {ok, Index + Count - 1};
+        _ ->
+            search_1(Count, Continue, Index + 1)
     end.
