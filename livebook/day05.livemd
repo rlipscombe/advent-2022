@@ -25,6 +25,11 @@ defmodule Stacks do
     push_layers(stacks, %{})
   end
 
+  def tops(stacks) do
+    Map.to_list(stacks) |> Enum.sort() |> Enum.map(fn {_, [top | _]} -> top end)
+    # Enum.reduce("", fn {_, [top | _]}, acc -> acc <> <<top>> end)
+  end
+
   defp push_layers([layer | more], acc) do
     IO.puts("#{layer}")
     acc = push_layer(layer, 1, acc)
@@ -104,7 +109,7 @@ part1 = Crane9000.run(stacks, instructions)
 ```
 
 ```elixir
-Map.to_list(part1) |> Enum.sort() |> Enum.reduce("", fn {_, [top | _]}, acc -> acc <> <<top>> end)
+Stacks.tops(part1) |> List.to_string()
 ```
 
 ```elixir
@@ -135,5 +140,5 @@ part2 = Crane9001.run(stacks, instructions)
 ```
 
 ```elixir
-Map.to_list(part2) |> Enum.sort() |> Enum.reduce("", fn {_, [top | _]}, acc -> acc <> <<top>> end)
+Stacks.tops(part2) |> List.to_string()
 ```
