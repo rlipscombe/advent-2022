@@ -2,6 +2,6 @@ def windowed(input; len):
     reduce range(0; ($input | length) - $len) as $i ([]; . + [$input[$i:$i+$len]]);
 
 def str_unique: explode | unique | implode;
-def all_unique: length as $len | select((. | str_unique | length) == $len);
+def all_unique: length as $len1 | (str_unique | length) as $len2 | select($len1 == $len2);
 
-$input | index([windowed($input; $len) | .[] | select(all_unique)] | .[0]) + $len
+$input | ([windowed($input; $len) | .[] | select(all_unique)] | .[0]) as $needle | index($needle) + $len
