@@ -1,0 +1,57 @@
+# Tuning Trouble
+
+```elixir
+Mix.install([{:kino, "~> 0.7.0"}])
+```
+
+## Implementation
+
+```elixir
+search = fn input, size ->
+  index =
+    Enum.chunk_every(String.to_charlist(input), size, 1)
+    |> Enum.find_index(fn packet -> length(Enum.uniq(packet)) == length(packet) end)
+
+  index + size
+end
+```
+
+## Examples
+
+```elixir
+7 == search.("mjqjpqmgbljsphdztnvjfqwrcgsmlb", 4)
+5 == search.("bvwbjplbgvbhsrlpgdmjqwftvncz", 4)
+6 == search.("nppdvjthqldpwncqszvftbrmjlhg", 4)
+10 == search.("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", 4)
+11 == search.("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", 4)
+
+19 == search.("mjqjpqmgbljsphdztnvjfqwrcgsmlb", 14)
+23 == search.("bvwbjplbgvbhsrlpgdmjqwftvncz", 14)
+23 == search.("nppdvjthqldpwncqszvftbrmjlhg", 14)
+29 == search.("nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg", 14)
+26 == search.("zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw", 14)
+
+:pass
+```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Input:")
+```
+
+```elixir
+input = Kino.Input.read(input)
+```
+
+## Part 1
+
+```elixir
+search.(input, 4)
+```
+
+## Part 2
+
+```elixir
+search.(input, 14)
+```
