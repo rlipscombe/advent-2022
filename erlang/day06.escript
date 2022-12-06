@@ -20,7 +20,7 @@ search(_Count, {[], _}, _Index) ->
     error;
 search(Count, {Packet, Rest}, Index) ->
     % io:format("# search ~B ~p ~p ~B~n", [Count, Packet, Rest, Index]),
-    case length(lists:uniq(lists:sort(Packet))) of
+    case length(lists:uniq(Packet)) of
 	C when C =:= Count ->
 	    {ok, Index + Count - 1};
 	_ ->
