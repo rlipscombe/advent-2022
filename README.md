@@ -7,7 +7,7 @@ This year, I'll attempt to do at least some of the challenges in [Gleam](https:/
 - Day 3: [Elixir Livebook](livebook/day03.livemd), [bash](bash/day03/)
 - Day 4: [Elixir Livebook](livebook/day04.livemd), [Gleam](gleam/day04/), [F#](fsharp/day04/)
 - Day 5: [Elixir Livebook](livebook/day05.livemd), [Python](python/day05.py)
-- Day 6: [Erlang](erlang/day06.escript), [Elixir Livebook](livebook/day06.livemd), [Rust](rust/day06/)
+- Day 6: [Erlang](erlang/day06.escript), [Elixir Livebook](livebook/day06.livemd), [Rust](rust/day06/), [C](c/day06/)
 
 ## Previous years
 
