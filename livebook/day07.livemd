@@ -46,7 +46,6 @@ defmodule M do
   end
 
   defp account(dir = [_ | parent], size, sizes) do
-    IO.puts("dir #{inspect(dir)}")
     sizes = Map.update(sizes, dir, size, fn s -> s + size end)
     account(parent, size, sizes)
   end
