@@ -1,0 +1,71 @@
+# No Space Left On Device
+
+```elixir
+Mix.install([{:kino, "~> 0.7.0"}])
+```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Input:")
+```
+
+```elixir
+input = Kino.Input.read(input) |> String.trim() |> String.split("\n")
+```
+
+```elixir
+defmodule M do
+  def walk(input) do
+    {_, sizes} =
+      Enum.reduce(input, {["/"], %{}}, fn
+        _line = "$ cd /", _acc = {_pwd, sizes} ->
+          {["/"], sizes}
+
+        _line = "$ cd ..", _acc = {_pwd = [_ | up], sizes} ->
+          {up, sizes}
+
+        _line = "$ cd " <> rel, _acc = {pwd, sizes} ->
+          {[rel | pwd], sizes}
+
+        _line = "$ ls", acc ->
+          acc
+
+        _line = "dir " <> _, acc ->
+          acc
+
+        _line = file, _acc = {pwd, sizes} ->
+          [size, _name] = String.split(file, " ")
+          size = String.to_integer(size)
+
+          sizes = account(pwd, size, sizes)
+          {pwd, sizes}
+      end)
+
+    sizes
+  end
+
+  defp account(dir = [_ | parent], size, sizes) do
+    IO.puts("dir #{inspect(dir)}")
+    sizes = Map.update(sizes, dir, size, fn s -> s + size end)
+    account(parent, size, sizes)
+  end
+
+  defp account([], _size, sizes) do
+    sizes
+  end
+end
+
+sizes = M.walk(input)
+```
+
+```elixir
+sizes
+|> Enum.filter(fn {_, size} -> size <= 100_000 end)
+|> Enum.map(fn {_, size} -> size end)
+|> Enum.sum()
+```
+
+```elixir
+used = sizes |> Enum.map(fn {_, size} -> size end) |> Enum.sum()
+```
