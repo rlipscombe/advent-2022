@@ -67,5 +67,19 @@ sizes
 ```
 
 ```elixir
-used = sizes |> Enum.map(fn {_, size} -> size end) |> Enum.sum()
+used = Map.get(sizes, ["/"])
+```
+
+```elixir
+total = 70_000_000
+required = 30_000_000
+free = total - used
+to_free = required - free
+```
+
+```elixir
+# Find the smallest directory that is larger than 'to_free':
+Enum.map(sizes, fn {_dir, size} -> size end)
+|> Enum.sort(:asc)
+|> Enum.find(fn size -> size >= to_free end)
 ```
