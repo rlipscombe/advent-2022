@@ -10,6 +10,12 @@ This year, I'll attempt to do at least some of the challenges in [Gleam](https:/
 - Day 6: [Erlang](erlang/day06.escript), [Elixir Livebook](livebook/day06.livemd), [Rust](rust/day06/), [C](c/day06/), [jq](jq/)
 - Day 7: [Elixir Livebook](livebook/day07.livemd)
 
+So far: 7 days, 10 languages.
+
+## Language Ideas
+
+- Perl, Ruby, Haskell, C#, C++, Racket, Kotlin, Squirrel, jq, Lua, Powershell, Go.
+
 ## Previous years
 
 - [2021](https://github.com/rlipscombe/advent-2021), I started trying a different language each day, but ended up just using Elixir Livebook.
