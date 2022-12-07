@@ -13,5 +13,5 @@ init([]) ->
         intensity => 0,
         period => 1
     },
-    ChildSpecs = [],
+    ChildSpecs = [#{id => root, start => {day07_dir_sup, start_link, []}, type => supervisor}],
     {ok, {SupFlags, ChildSpecs}}.
