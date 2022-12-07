@@ -1,6 +1,11 @@
 # Advent of Code, 2022
 
-This year, I'll attempt to do at least some of the challenges in [Gleam](https://gleam.run).
+This year, I originally planned to do the challenges in
+[Gleam](https://gleam.run), but I seem to be back on my "at least one different
+language every day" thing. On average, anyway.
+
+I usually start with [Elixir Livebook](https://livebook.dev) because it's a
+good way to explore the problem.
 
 - Day 1: [Elixir Livebook](livebook/day01.livemd), [Gleam](gleam/day01/), [awk](awk/day01.awk), [Rust](rust/day01/), [jq](jq/)
 - Day 2: [Elixir Livebook](livebook/day02.livemd), [awk](awk/day02.awk), [Gleam](gleam/day02/)
