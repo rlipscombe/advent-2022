@@ -152,7 +152,9 @@ length(visible)
 ```elixir
 defmodule Part2 do
   def get_scores(values, bounds) do
-    Enum.map(values, &get_score(&1, values, bounds))
+    Enum.map(values, fn tree = {{x, y}, _h} ->
+      {{x, y}, get_score(tree, values, bounds)}
+    end)
   end
 
   def get_score(tree = {{x, y}, height}, values, _bounds = [{x0, y0}, {x1, y1}])
@@ -201,18 +203,42 @@ end
 ```
 
 ```elixir
-Part2.get_score({{2, 1}, 5}, input, bounds)
+scores = Part2.get_scores(input, bounds)
+best = scores |> Enum.max_by(fn {{_x, _y}, h} -> h end)
+best
 ```
 
 ```elixir
-Part2.get_score({{2, 3}, 5}, input, bounds)
+render_scores = fn scores, _best = {{best_x, best_y}, _s} ->
+  heatmap =
+    Enum.map(scores, fn {{x, y}, score} ->
+      %{x: x, y: y, heat: score}
+    end)
+
+  heat_layer =
+    Vl.new()
+    |> Vl.mark(:rect)
+    |> Vl.data(values: heatmap)
+    |> Vl.encode_field(:x, "x")
+    |> Vl.encode_field(:y, "y")
+    |> Vl.encode_field(:color, "heat",
+      type: :ordinal,
+      legend: nil,
+      scale: [scheme: "bluegreen"]
+    )
+
+  best_layer =
+    Vl.new()
+    |> Vl.mark(:point, size: 500, shape: :circle, color: "#ff00ff")
+    |> Vl.data(values: %{x: best_x, y: best_y})
+    |> Vl.encode_field(:x, "x")
+    |> Vl.encode_field(:y, "y")
+
+  Vl.new(width: 600, height: 600)
+  |> Vl.layers([heat_layer, best_layer])
+end
 ```
 
 ```elixir
-Part2.get_scores(input, bounds) |> Enum.max()
-```
-
-```elixir
-# TODO: Once we've found the best tree, a simple row/column visualisation won't be that
-# interesting, but maybe we could consider some kind of flood fill...?
+render_scores.(scores, best)
 ```
