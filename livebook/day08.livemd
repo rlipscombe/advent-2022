@@ -1,0 +1,171 @@
+# Treetop Tree House
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.8.0"},
+  {:kino_vega_lite, "~> 0.1.7"},
+  {:vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+:ok
+```
+
+## Puzzle Input
+
+```elixir
+input = Kino.Input.textarea("Puzzle Input:")
+```
+
+Convert into a map: `{x, y} => height`
+
+```elixir
+input =
+  Kino.Input.read(input)
+  |> String.split("\n", trim: true)
+  |> Enum.with_index(fn line, y ->
+    String.to_charlist(line)
+    |> Enum.with_index(fn ch, x ->
+      {{x, y}, ch - ?0}
+    end)
+  end)
+  |> List.flatten()
+  |> Enum.into(%{})
+```
+
+Calculate the size of the grid.
+
+```elixir
+{{{min_x, _}, _}, {{max_x, _}, _}} = input |> Enum.min_max_by(fn {{x, _y}, _} -> x end)
+{{{_, min_y}, _}, {{_, max_y}, _}} = input |> Enum.min_max_by(fn {{_x, y}, _} -> y end)
+bounds = [{min_x, min_y}, {max_x, max_y}]
+```
+
+## Preview Visualization
+
+```elixir
+render_heatmap = fn values, visible ->
+  height_values =
+    Enum.filter(values, fn {{x, y}, _} ->
+      not Enum.member?(visible, {x, y})
+    end)
+    |> Enum.map(fn {{x, y}, height} ->
+      %{x: x, y: y, height: height}
+    end)
+
+  visible_data =
+    Enum.reduce(visible, [], fn {x, y}, acc ->
+      height = Map.fetch!(values, {x, y})
+      [%{x: x, y: y, height: height} | acc]
+    end)
+
+  height_layer =
+    Vl.new()
+    |> Vl.mark(:rect)
+    |> Vl.data(values: height_values)
+    |> Vl.encode_field(:x, "x")
+    |> Vl.encode_field(:y, "y")
+    |> Vl.encode_field(:color, "height",
+      type: :ordinal,
+      legend: nil,
+      scale: [scheme: "reds", domain: Enum.to_list(0..9)]
+    )
+
+  visible_layer =
+    Vl.new()
+    |> Vl.mark(:rect)
+    |> Vl.data(values: visible_data)
+    |> Vl.encode_field(:x, "x")
+    |> Vl.encode_field(:y, "y")
+    |> Vl.encode_field(:color, "height",
+      type: :ordinal,
+      legend: nil,
+      scale: [scheme: "greens", domain: Enum.to_list(0..9)]
+    )
+
+  Vl.new(width: 600, height: 600)
+  |> Vl.layers([
+    visible_layer,
+    height_layer
+  ])
+end
+```
+
+* for each row and column (in each direction):
+  * for each tree
+    * if it's taller than the previous tallest found in the row, it's visible, else invisible.
+
+```elixir
+inspect_row = fn values, visible, xs, y ->
+  acc =
+    Enum.reduce(xs, {visible, -1}, fn x, {acc, mx} ->
+      height = Map.fetch!(values, {x, y})
+
+      if height > mx do
+        {[{x, y} | acc], height}
+      else
+        {acc, mx}
+      end
+    end)
+
+  {visible, _} = acc
+  visible
+end
+
+inspect_col = fn values, visible, x, ys ->
+  acc =
+    Enum.reduce(ys, {visible, -1}, fn y, {acc, mx} ->
+      height = Map.fetch!(values, {x, y})
+
+      if height > mx do
+        {[{x, y} | acc], height}
+      else
+        {acc, mx}
+      end
+    end)
+
+  {visible, _} = acc
+  visible
+end
+
+get_visible = fn values, bounds ->
+  [{x0, y0}, {x1, y1}] = bounds
+  visible = []
+
+  visible =
+    Enum.reduce(y0..y1, visible, fn y, acc ->
+      inspect_row.(values, acc, x0..x1, y)
+    end)
+
+  visible =
+    Enum.reduce(y0..y1, visible, fn y, acc ->
+      inspect_row.(values, acc, x1..x0//-1, y)
+    end)
+
+  visible =
+    Enum.reduce(x0..x1, visible, fn x, acc ->
+      inspect_col.(values, acc, x, y0..y1)
+    end)
+
+  visible =
+    Enum.reduce(x0..x1, visible, fn x, acc ->
+      inspect_col.(values, acc, x, y1..y0//-1)
+    end)
+
+  visible |> Enum.uniq()
+end
+```
+
+```elixir
+visible = get_visible.(input, bounds)
+```
+
+```elixir
+render_heatmap.(input, visible)
+```
+
+## Part 1
+
+```elixir
+length(visible)
+```
