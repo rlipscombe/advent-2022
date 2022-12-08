@@ -229,7 +229,7 @@ render_scores = fn scores, _best = {{best_x, best_y}, _s} ->
 
   best_layer =
     Vl.new()
-    |> Vl.mark(:point, size: 500, shape: :circle, color: "#ff00ff")
+    |> Vl.mark(:point, size: 500, shape: :circle, color: "#ff0000")
     |> Vl.data(values: %{x: best_x, y: best_y})
     |> Vl.encode_field(:x, "x")
     |> Vl.encode_field(:y, "y")
@@ -237,6 +237,10 @@ render_scores = fn scores, _best = {{best_x, best_y}, _s} ->
   Vl.new(width: 600, height: 600)
   |> Vl.layers([heat_layer, best_layer])
 end
+```
+
+```elixir
+render_scores.(input, best)
 ```
 
 ```elixir
