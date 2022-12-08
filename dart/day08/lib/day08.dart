@@ -13,6 +13,39 @@ class Point {
   int get hashCode => col * 137 + row;
 }
 
+class Range {
+  final int begin;
+  final int end;
+
+  Range(this.begin, this.end);
+
+  ReversedRange reverse() {
+    return ReversedRange(begin, end);
+  }
+
+  TAcc fold<TAcc>(TAcc acc, Function(TAcc acc, int value) combine) {
+    for (var value = begin; value < end; ++value) {
+      acc = combine(acc, value);
+    }
+
+    return acc;
+  }
+}
+
+class ReversedRange {
+  final int begin;
+  final int end;
+
+  ReversedRange(this.begin, this.end);
+
+  TAcc fold<TAcc>(TAcc acc, TAcc Function(TAcc acc, int value) combine) {
+    for (var value = end - 1; value >= 0; --value) {
+      acc = combine(acc, value);
+    }
+    return acc;
+  }
+}
+
 class Trees {
   final List<List<int>> trees;
   final int colCount;
@@ -36,41 +69,41 @@ class Trees {
 
   TAcc foldRow<TAcc>(int row, TAcc acc,
       TAcc Function(TAcc acc, int col, int row, int height) combine) {
-    for (var col = 0; col < colCount; ++col) {
+    return columns().fold(acc, (acc, col) {
       var height = trees[row][col];
-      acc = combine(acc, col, row, height);
-    }
-
-    return acc;
+      return combine(acc, col, row, height);
+    });
   }
 
   TAcc foldRowReverse<TAcc>(int row, TAcc acc,
       TAcc Function(TAcc acc, int col, int row, int height) combine) {
-    for (var col = colCount - 1; col >= 0; --col) {
+    return columns().reverse().fold(acc, (acc, col) {
       var height = trees[row][col];
-      acc = combine(acc, col, row, height);
-    }
-
-    return acc;
+      return combine(acc, col, row, height);
+    });
   }
 
   TAcc foldColumn<TAcc>(int col, TAcc acc,
       TAcc Function(TAcc acc, int col, int row, int height) combine) {
-    for (var row = 0; row < rowCount; ++row) {
+    return rows().fold(acc, (acc, row) {
       var height = trees[row][col];
-      acc = combine(acc, col, row, height);
-    }
-
-    return acc;
+      return combine(acc, col, row, height);
+    });
   }
 
   TAcc foldColumnReverse<TAcc>(int col, TAcc acc,
       TAcc Function(TAcc acc, int col, int row, int height) combine) {
-    for (var row = rowCount - 1; row >= 0; --row) {
+    return rows().reverse().fold(acc, (acc, row) {
       var height = trees[row][col];
-      acc = combine(acc, col, row, height);
-    }
+      return combine(acc, col, row, height);
+    });
+  }
 
-    return acc;
+  Range columns() {
+    return Range(0, colCount);
+  }
+
+  Range rows() {
+    return Range(0, rowCount);
   }
 }
