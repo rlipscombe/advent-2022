@@ -14,12 +14,13 @@ good way to explore the problem.
 - Day 5: [Elixir Livebook](livebook/day05.livemd), [Python](python/day05.py)
 - Day 6: [Erlang](erlang/day06.escript), [Elixir Livebook](livebook/day06.livemd), [Rust](rust/day06/), [C](c/day06/), [jq](jq/)
 - Day 7: [Elixir Livebook](livebook/day07.livemd)
+- Day 8: [Elixir Livebook](livebook/day08.livemd), [Dart](dart/day08/)
 
-So far: 7 days, 10 languages.
+So far: 8 days, 11 languages.
 
 ## Language Ideas
 
-- Perl, Ruby, Haskell, C#, C++, Racket, Kotlin, Squirrel, Lua, Powershell, Go, Dart, Crystal, OCaml.
+- Perl, Ruby, Haskell, C#, C++, Racket, Kotlin, Squirrel, Lua, Powershell, Go, Crystal, OCaml.
 
 ## Previous years
 
