@@ -106,4 +106,60 @@ class Trees {
   Range rows() {
     return Range(0, rowCount);
   }
+
+  int searchNorth(int col, int row, int height) {
+    int count = 0;
+    for (var r = row - 1; r >= 0; --r) {
+      var other = trees[r][col];
+      ++count;
+      if (other >= height) {
+        break;
+      }
+    }
+
+    return count;
+  }
+
+  int searchEast(int col, int row, int height) {
+    int count = 0;
+    for (var c = col + 1; c < colCount; ++c) {
+      var other = trees[row][c];
+      ++count;
+      if (other >= height) {
+        break;
+      }
+    }
+
+    return count;
+  }
+
+  int searchSouth(int col, int row, int height) {
+    int count = 0;
+    for (var r = row + 1; r < rowCount; ++r) {
+      var other = trees[r][col];
+      ++count;
+      if (other >= height) {
+        break;
+      }
+    }
+
+    return count;
+  }
+
+  int searchWest(int col, int row, int height) {
+    int count = 0;
+    for (var c = col - 1; c >= 0; --c) {
+      var other = trees[row][c];
+      ++count;
+      if (other >= height) {
+        break;
+      }
+    }
+
+    return count;
+  }
+
+  int at(int col, int row) {
+    return trees[row][col];
+  }
 }
