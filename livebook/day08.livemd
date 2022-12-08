@@ -45,49 +45,26 @@ bounds = [{min_x, min_y}, {max_x, max_y}]
 
 ```elixir
 render_heatmap = fn values, visible ->
-  height_values =
-    Enum.filter(values, fn {{x, y}, _} ->
-      not Enum.member?(visible, {x, y})
-    end)
-    |> Enum.map(fn {{x, y}, height} ->
-      %{x: x, y: y, height: height}
+  heatmap =
+    Enum.map(values, fn {{x, y}, height} ->
+      heat = if Enum.member?(visible, {x, y}), do: height, else: -height
+      %{x: x, y: y, heat: heat}
     end)
 
-  visible_data =
-    Enum.reduce(visible, [], fn {x, y}, acc ->
-      height = Map.fetch!(values, {x, y})
-      [%{x: x, y: y, height: height} | acc]
-    end)
-
-  height_layer =
+  heat_layer =
     Vl.new()
     |> Vl.mark(:rect)
-    |> Vl.data(values: height_values)
+    |> Vl.data(values: heatmap)
     |> Vl.encode_field(:x, "x")
     |> Vl.encode_field(:y, "y")
-    |> Vl.encode_field(:color, "height",
+    |> Vl.encode_field(:color, "heat",
       type: :ordinal,
       legend: nil,
-      scale: [scheme: "reds", domain: Enum.to_list(0..9)]
-    )
-
-  visible_layer =
-    Vl.new()
-    |> Vl.mark(:rect)
-    |> Vl.data(values: visible_data)
-    |> Vl.encode_field(:x, "x")
-    |> Vl.encode_field(:y, "y")
-    |> Vl.encode_field(:color, "height",
-      type: :ordinal,
-      legend: nil,
-      scale: [scheme: "greens", domain: Enum.to_list(0..9)]
+      scale: [scheme: "bluegreen", domain: Enum.to_list(-9..9)]
     )
 
   Vl.new(width: 600, height: 600)
-  |> Vl.layers([
-    visible_layer,
-    height_layer
-  ])
+  |> Vl.layers([heat_layer])
 end
 ```
 
@@ -168,4 +145,74 @@ render_heatmap.(input, visible)
 
 ```elixir
 length(visible)
+```
+
+## Part 2
+
+```elixir
+defmodule Part2 do
+  def get_scores(values, bounds) do
+    Enum.map(values, &get_score(&1, values, bounds))
+  end
+
+  def get_score(tree = {{x, y}, height}, values, _bounds = [{x0, y0}, {x1, y1}])
+      when x == x0 or x == x1 or y == y0 or y == y1 do
+    # IO.puts("edge #{inspect(tree)}")
+    0
+  end
+
+  def get_score(tree = {{x, y}, height}, values, _bounds = [{x0, y0}, {x1, y1}]) do
+    # IO.inspect(tree)
+
+    get_col_score(x, (y - 1)..y0//-1, values, height) *
+      get_col_score(x, (y + 1)..y1, values, height) *
+      get_row_score((x - 1)..x0//-1, y, values, height) *
+      get_row_score((x + 1)..x1, y, values, height)
+  end
+
+  defp get_col_score(x, ys, values, height) do
+    # Count trees until we hit one at least as high as us.
+    Enum.reduce_while(ys, 0, fn y, acc ->
+      other = Map.fetch!(values, {x, y})
+      # IO.inspect({x, y, other})
+
+      if other >= height do
+        {:halt, acc + 1}
+      else
+        {:cont, acc + 1}
+      end
+    end)
+  end
+
+  defp get_row_score(xs, y, values, height) do
+    # Count trees until we hit one at least as high as us.
+    Enum.reduce_while(xs, 0, fn x, acc ->
+      other = Map.fetch!(values, {x, y})
+      # IO.inspect({x, y, other})
+
+      if other >= height do
+        {:halt, acc + 1}
+      else
+        {:cont, acc + 1}
+      end
+    end)
+  end
+end
+```
+
+```elixir
+Part2.get_score({{2, 1}, 5}, input, bounds)
+```
+
+```elixir
+Part2.get_score({{2, 3}, 5}, input, bounds)
+```
+
+```elixir
+Part2.get_scores(input, bounds) |> Enum.max()
+```
+
+```elixir
+# TODO: Once we've found the best tree, a simple row/column visualisation won't be that
+# interesting, but maybe we could consider some kind of flood fill...?
 ```
