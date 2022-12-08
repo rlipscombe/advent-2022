@@ -17,18 +17,28 @@ class Point {
   int get hashCode => col * 137 + row;
 }
 
-void main(List<String> arguments) {
-  var lines = File(arguments[0]).readAsStringSync().trim().split("\n");
-  var colCount = lines[0].length;
-  var rowCount = lines.length;
+class Trees {
+  final List<List<int>> trees;
+  final int colCount;
+  final int rowCount;
 
-  List<List<int>> trees = [];
-  for (var line in lines) {
-    trees.add(line.codeUnits.map((e) => e - 48).toList());
+  Trees(this.trees, this.colCount, this.rowCount);
+
+  static Trees fromString(String input) {
+    var lines = input.trim().split("\n");
+
+    List<List<int>> data = [];
+    for (var line in lines) {
+      data.add(line.codeUnits.map((e) => e - 48).toList());
+    }
+
+    var colCount = lines[0].length;
+    var rowCount = lines.length;
+
+    return Trees(data, colCount, rowCount);
   }
 
-  Set<Point> visible = {};
-  for (var row = 0; row < rowCount; ++row) {
+  void traverseRow(int row, Set<Point> visible) {
     var max = -1;
     for (var col = 0; col < colCount; ++col) {
       var height = trees[row][col];
@@ -37,8 +47,10 @@ void main(List<String> arguments) {
         max = height;
       }
     }
+  }
 
-    max = -1;
+  void traverseRowReverse(int row, Set<Point> visible) {
+    var max = -1;
     for (var col = colCount - 1; col >= 0; --col) {
       var height = trees[row][col];
       if (height > max) {
@@ -48,7 +60,7 @@ void main(List<String> arguments) {
     }
   }
 
-  for (var col = 0; col < colCount; ++col) {
+  void traverseColumn(int col, Set<Point> visible) {
     var max = -1;
     for (var row = 0; row < rowCount; ++row) {
       var height = trees[row][col];
@@ -57,8 +69,10 @@ void main(List<String> arguments) {
         max = height;
       }
     }
+  }
 
-    max = -1;
+  void traverseColumnReverse(int col, Set<Point> visible) {
+    var max = -1;
     for (var row = rowCount - 1; row >= 0; --row) {
       var height = trees[row][col];
       if (height > max) {
@@ -66,6 +80,23 @@ void main(List<String> arguments) {
         max = height;
       }
     }
+  }
+}
+
+void main(List<String> arguments) {
+  var input = File(arguments[0]).readAsStringSync();
+
+  Trees trees = Trees.fromString(input);
+
+  Set<Point> visible = {};
+  for (var row = 0; row < trees.rowCount; ++row) {
+    trees.traverseRow(row, visible);
+    trees.traverseRowReverse(row, visible);
+  }
+
+  for (var col = 0; col < trees.colCount; ++col) {
+    trees.traverseColumn(col, visible);
+    trees.traverseColumnReverse(col, visible);
   }
 
   print("part 1: ${visible.length}");
