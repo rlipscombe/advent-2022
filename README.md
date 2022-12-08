@@ -20,7 +20,7 @@ So far: 8 days, 11 languages.
 
 ## Language Ideas
 
-- Perl, Ruby, Haskell, C#, C++, Racket, Kotlin, Squirrel, Lua, Powershell, Go, Crystal, OCaml.
+- Perl, Ruby, Haskell, C#, C++, Racket, Kotlin, Squirrel, Lua, Powershell, Go, Crystal, OCaml, Zig, Javascript, Typescript, Num, Scala.
 
 ## Previous years
 
