@@ -19,8 +19,8 @@ class Point {
 
 void main(List<String> arguments) {
   var lines = File(arguments[0]).readAsStringSync().trim().split("\n");
-  var width = lines[0].length;
-  var height = lines.length;
+  var colCount = lines[0].length;
+  var rowCount = lines.length;
 
   List<List<int>> trees = [];
   for (var line in lines) {
@@ -28,9 +28,9 @@ void main(List<String> arguments) {
   }
 
   Set<Point> visible = {};
-  for (var row = 0; row < height; ++row) {
+  for (var row = 0; row < rowCount; ++row) {
     var max = -1;
-    for (var col = 0; col < width; ++col) {
+    for (var col = 0; col < colCount; ++col) {
       var height = trees[row][col];
       if (height > max) {
         visible.add(Point(col, row));
@@ -39,7 +39,7 @@ void main(List<String> arguments) {
     }
 
     max = -1;
-    for (var col = width - 1; col >= 0; --col) {
+    for (var col = colCount - 1; col >= 0; --col) {
       var height = trees[row][col];
       if (height > max) {
         visible.add(Point(col, row));
@@ -48,9 +48,9 @@ void main(List<String> arguments) {
     }
   }
 
-  for (var col = 0; col < width; ++col) {
+  for (var col = 0; col < colCount; ++col) {
     var max = -1;
-    for (var row = 0; row < height; ++row) {
+    for (var row = 0; row < rowCount; ++row) {
       var height = trees[row][col];
       if (height > max) {
         visible.add(Point(col, row));
@@ -59,7 +59,7 @@ void main(List<String> arguments) {
     }
 
     max = -1;
-    for (var row = height - 1; row >= 0; --row) {
+    for (var row = rowCount - 1; row >= 0; --row) {
       var height = trees[row][col];
       if (height > max) {
         visible.add(Point(col, row));
