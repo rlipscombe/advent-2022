@@ -55,7 +55,7 @@ If we want to run an animation, we need to see the individual steps. The easiest
 ```elixir
 steps =
   Enum.flat_map(instructions, fn
-    {direction, distance} -> for i <- 1..distance, do: direction
+    {direction, distance} -> for _ <- 1..distance, do: direction
   end)
 ```
 
@@ -68,11 +68,8 @@ defmodule Part1 do
   def run(steps), do: run(steps, init())
 
   def run([step | steps], {head, tail, visited}) do
-    IO.puts("#{inspect(step)} #{inspect(head)} #{inspect(tail)} #{inspect(visited)}")
     head = move(head, step)
-    IO.puts("  head moves to #{inspect(head)}")
     tail = chase(tail, head)
-    IO.puts("  tail moves to #{inspect(tail)}")
     run(steps, {head, tail, MapSet.put(visited, tail)})
   end
 
@@ -87,12 +84,6 @@ defmodule Part1 do
   def chase(tail = {tx, ty}, _head = {hx, hy})
       when hx - 1 <= tx and tx <= hx + 1 and hy - 1 <= ty and ty <= hy + 1,
       do: tail
-
-  # If the head is ever two steps directly upm, down, left, or right, the tail must move.
-  # def chase(_tail = {tx, ty}, _head = {hx, hy}) when tx < hx - 1 and ty == hy, do: {tx + 1, ty}
-  # def chase(_tail = {tx, ty}, _head = {hx, hy}) when tx > hx + 1 and ty == hy, do: {tx - 1, ty}
-  # def chase(_tail = {tx, ty}, _head = {hx, hy}) when ty < hy - 1 and tx == hx, do: {tx, ty + 1}
-  # def chase(_tail = {tx, ty}, _head = {hx, hy}) when ty > hy + 1 and tx == hx, do: {tx, ty - 1}
 
   def chase(_tail = {tx, ty}, _head = {hx, hy}), do: {tx + sign(hx - tx), ty + sign(hy - ty)}
 
