@@ -60,8 +60,7 @@ defmodule Part1 do
   end
 
   def run(steps) do
-    {_h, _t, _bounds, visited} = Enum.reduce(steps, init(steps), &step/2)
-    visited
+    Enum.reduce(steps, init(steps), &step/2)
   end
 
   def step(step, state = {head, tail, bounds, visited}) do
@@ -89,7 +88,8 @@ end
 ```
 
 ```elixir
-Part1.run(steps) |> Enum.count()
+{_h, _t, _bounds, visited} = Part1.run(steps)
+Enum.count(visited)
 ```
 
 ```elixir
@@ -126,14 +126,5 @@ end
 ```
 
 ```elixir
-# TODO: Is there a better way to do a tick-based iteration over the enum?
-stream =
-  Stream.zip(Stream.interval(100), steps)
-  |> Stream.map(&elem(&1, 1))
-
-Kino.animate(stream, Part1.init(steps), fn step, state ->
-  state = Part1.step(step, state)
-  render = Render.heatmap(state)
-  {:cont, render, state}
-end)
+Render.heatmap(Part1.run(steps))
 ```
