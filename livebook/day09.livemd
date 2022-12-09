@@ -27,27 +27,6 @@ instructions =
   end)
 ```
 
-## Bounds?
-
-We don't actually need a `Grid` data structure to solve the problems as stated, but if we wanted to render a heatmap or an animation, it might be useful to know the range that the instructions take us over.
-
-```elixir
-{visited, final} =
-  Enum.map_reduce(instructions, {0, 0}, fn
-    {"D", d}, {x, y} -> {{x, y - d}, {x, y - d}}
-    {"U", u}, {x, y} -> {{x, y + u}, {x, y + u}}
-    {"L", l}, {x, y} -> {{x - l, y}, {x - l, y}}
-    {"R", r}, {x, y} -> {{x + r, y}, {x + r, y}}
-  end)
-
-{{min_x, _}, {max_x, _}} = visited |> Enum.min_max_by(fn {x, _y} -> x end)
-{{_, min_y}, {_, max_y}} = visited |> Enum.min_max_by(fn {_x, y} -> y end)
-bounds = [{min_x, min_y}, {max_x, max_y}]
-
-# Assumption: the tail is only ever one step behind the head; it cuts corners.
-# So: The number of locations tail visits is the same as head, but minus those corners.
-```
-
 ## Expand Instructions
 
 If we want to run an animation, we need to see the individual steps. The easiest way to do that is to convert the instructions into single steps, so that "D 3" becomes "D 1, D 1, D 1" and so on.
@@ -63,17 +42,33 @@ steps =
 
 ```elixir
 defmodule Part1 do
-  def init(), do: {{0, 0}, {0, 0}, MapSet.new()}
+  def init(steps), do: {{0, 0}, {0, 0}, bounds(steps), MapSet.new()}
 
-  def run(steps), do: run(steps, init())
+  def bounds(steps) do
+    {visited, final} =
+      Enum.map_reduce(steps, {0, 0}, fn
+        "D", {x, y} -> {{x, y - 1}, {x, y - 1}}
+        "U", {x, y} -> {{x, y + 1}, {x, y + 1}}
+        "L", {x, y} -> {{x - 1, y}, {x - 1, y}}
+        "R", {x, y} -> {{x + 1, y}, {x + 1, y}}
+      end)
 
-  def run([step | steps], {head, tail, visited}) do
-    head = move(head, step)
-    tail = chase(tail, head)
-    run(steps, {head, tail, MapSet.put(visited, tail)})
+    {{min_x, _}, {max_x, _}} = visited |> Enum.min_max_by(fn {x, _y} -> x end)
+    {{_, min_y}, {_, max_y}} = visited |> Enum.min_max_by(fn {_x, y} -> y end)
+    bounds = {min_x..max_x, min_y..max_y}
+    bounds
   end
 
-  def run([], {_head, _tail, visited}), do: MapSet.to_list(visited)
+  def run(steps) do
+    {_h, _t, _bounds, visited} = Enum.reduce(steps, init(steps), &step/2)
+    visited
+  end
+
+  def step(step, state = {head, tail, bounds, visited}) do
+    head = move(head, step)
+    tail = chase(tail, head)
+    {head, tail, bounds, MapSet.put(visited, tail)}
+  end
 
   def move({x, y}, "R"), do: {x + 1, y}
   def move({x, y}, "U"), do: {x, y + 1}
@@ -95,4 +90,50 @@ end
 
 ```elixir
 Part1.run(steps) |> Enum.count()
+```
+
+```elixir
+defmodule Render do
+  def heatmap(_state = {head, tail, _bounds = {x_scale, y_scale}, visited}) do
+    visited_points =
+      Enum.map(visited, fn {x, y} ->
+        %{x: x, y: y}
+      end)
+
+    visited_layer =
+      Vl.new()
+      |> Vl.mark(:rect)
+      |> Vl.data(values: visited_points)
+      |> Vl.encode_field(:x, "x", scale: [domain: Enum.to_list(x_scale)])
+      |> Vl.encode_field(:y, "y", scale: [domain: Enum.to_list(y_scale) |> Enum.reverse()])
+
+    knot_points = [knot_point(head, "H"), knot_point(tail, "T")]
+
+    text_layer =
+      Vl.new()
+      |> Vl.mark(:text)
+      |> Vl.data(values: knot_points)
+      |> Vl.encode_field(:x, "x")
+      |> Vl.encode_field(:y, "y")
+      |> Vl.encode_field(:text, "text")
+
+    Vl.new(width: 600, height: 600)
+    |> Vl.layers([visited_layer, text_layer])
+  end
+
+  defp knot_point({x, y}, text), do: %{x: x, y: y, text: text}
+end
+```
+
+```elixir
+# TODO: Is there a better way to do a tick-based iteration over the enum?
+stream =
+  Stream.zip(Stream.interval(100), steps)
+  |> Stream.map(&elem(&1, 1))
+
+Kino.animate(stream, Part1.init(steps), fn step, state ->
+  state = Part1.step(step, state)
+  render = Render.heatmap(state)
+  {:cont, render, state}
+end)
 ```
