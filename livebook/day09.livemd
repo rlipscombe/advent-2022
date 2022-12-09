@@ -1,0 +1,107 @@
+# Rope Bridge
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.8.0"},
+  {:kino_vega_lite, "~> 0.1.7"},
+  {:vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+```
+
+## Instructions
+
+```elixir
+input = Kino.Input.textarea("Input:")
+```
+
+```elixir
+instructions =
+  Kino.Input.read(input)
+  |> String.trim()
+  |> String.split("\n")
+  |> Enum.map(fn i ->
+    [direction, distance] = String.split(i, " ")
+    {direction, String.to_integer(distance)}
+  end)
+```
+
+## Bounds?
+
+We don't actually need a `Grid` data structure to solve the problems as stated, but if we wanted to render a heatmap or an animation, it might be useful to know the range that the instructions take us over.
+
+```elixir
+{visited, final} =
+  Enum.map_reduce(instructions, {0, 0}, fn
+    {"D", d}, {x, y} -> {{x, y - d}, {x, y - d}}
+    {"U", u}, {x, y} -> {{x, y + u}, {x, y + u}}
+    {"L", l}, {x, y} -> {{x - l, y}, {x - l, y}}
+    {"R", r}, {x, y} -> {{x + r, y}, {x + r, y}}
+  end)
+
+{{min_x, _}, {max_x, _}} = visited |> Enum.min_max_by(fn {x, _y} -> x end)
+{{_, min_y}, {_, max_y}} = visited |> Enum.min_max_by(fn {_x, y} -> y end)
+bounds = [{min_x, min_y}, {max_x, max_y}]
+
+# Assumption: the tail is only ever one step behind the head; it cuts corners.
+# So: The number of locations tail visits is the same as head, but minus those corners.
+```
+
+## Expand Instructions
+
+If we want to run an animation, we need to see the individual steps. The easiest way to do that is to convert the instructions into single steps, so that "D 3" becomes "D 1, D 1, D 1" and so on.
+
+```elixir
+steps =
+  Enum.flat_map(instructions, fn
+    {direction, distance} -> for i <- 1..distance, do: direction
+  end)
+```
+
+## Part 1
+
+```elixir
+defmodule Part1 do
+  def init(), do: {{0, 0}, {0, 0}, MapSet.new()}
+
+  def run(steps), do: run(steps, init())
+
+  def run([step | steps], {head, tail, visited}) do
+    IO.puts("#{inspect(step)} #{inspect(head)} #{inspect(tail)} #{inspect(visited)}")
+    head = move(head, step)
+    IO.puts("  head moves to #{inspect(head)}")
+    tail = chase(tail, head)
+    IO.puts("  tail moves to #{inspect(tail)}")
+    run(steps, {head, tail, MapSet.put(visited, tail)})
+  end
+
+  def run([], {_head, _tail, visited}), do: MapSet.to_list(visited)
+
+  def move({x, y}, "R"), do: {x + 1, y}
+  def move({x, y}, "U"), do: {x, y + 1}
+  def move({x, y}, "L"), do: {x - 1, y}
+  def move({x, y}, "D"), do: {x, y - 1}
+
+  # The head and tail must always be touching.
+  def chase(tail = {tx, ty}, _head = {hx, hy})
+      when hx - 1 <= tx and tx <= hx + 1 and hy - 1 <= ty and ty <= hy + 1,
+      do: tail
+
+  # If the head is ever two steps directly upm, down, left, or right, the tail must move.
+  # def chase(_tail = {tx, ty}, _head = {hx, hy}) when tx < hx - 1 and ty == hy, do: {tx + 1, ty}
+  # def chase(_tail = {tx, ty}, _head = {hx, hy}) when tx > hx + 1 and ty == hy, do: {tx - 1, ty}
+  # def chase(_tail = {tx, ty}, _head = {hx, hy}) when ty < hy - 1 and tx == hx, do: {tx, ty + 1}
+  # def chase(_tail = {tx, ty}, _head = {hx, hy}) when ty > hy + 1 and tx == hx, do: {tx, ty - 1}
+
+  def chase(_tail = {tx, ty}, _head = {hx, hy}), do: {tx + sign(hx - tx), ty + sign(hy - ty)}
+
+  def sign(value) when value < 0, do: -1
+  def sign(value) when value == 0, do: 0
+  def sign(value) when value > 0, do: 1
+end
+```
+
+```elixir
+Part1.run(steps) |> Enum.count()
+```
