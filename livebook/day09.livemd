@@ -38,14 +38,27 @@ steps =
   end)
 ```
 
-## Part 1
+## Rope
 
 ```elixir
-defmodule Part1 do
-  def init(steps), do: {{0, 0}, {0, 0}, bounds(steps), MapSet.new()}
+defmodule Rope do
+  defmodule Knot do
+    defstruct x: 0, y: 0, visited: MapSet.new(), text: "?"
+  end
+
+  def new(_num_tails = 1) do
+    {%Knot{text: "H"}, [%Knot{text: "T"}]}
+  end
+
+  def new(num_tails) do
+    head = %Knot{text: "H"}
+    tails = for t <- 1..num_tails, do: %Knot{text: Integer.to_string(t)}
+    {head, tails}
+  end
 
   def bounds(steps) do
-    {visited, final} =
+    # TODO: Calculate this as we go along; saves the second pass.
+    {visited, _final} =
       Enum.map_reduce(steps, {0, 0}, fn
         "D", {x, y} -> {{x, y - 1}, {x, y - 1}}
         "U", {x, y} -> {{x, y + 1}, {x, y + 1}}
@@ -59,27 +72,38 @@ defmodule Part1 do
     bounds
   end
 
-  def run(steps) do
-    Enum.reduce(steps, init(steps), &step/2)
+  def run(state, steps) do
+    Enum.reduce(steps, state, &step/2)
   end
 
-  def step(step, state = {head, tail, bounds, visited}) do
-    head = move(head, step)
-    tail = chase(tail, head)
-    {head, tail, bounds, MapSet.put(visited, tail)}
+  def step(step, _state = {head, tails}) do
+    head = move(head, step) |> mark_visited()
+
+    {tails, _} =
+      Enum.map_reduce(tails, head, fn tail, head ->
+        tail = chase(tail, head) |> mark_visited()
+        {tail, tail}
+      end)
+
+    {head, tails}
   end
 
-  def move({x, y}, "R"), do: {x + 1, y}
-  def move({x, y}, "U"), do: {x, y + 1}
-  def move({x, y}, "L"), do: {x - 1, y}
-  def move({x, y}, "D"), do: {x, y - 1}
+  def mark_visited(knot = %Knot{x: x, y: y, visited: visited}) do
+    %Knot{knot | visited: MapSet.put(visited, {x, y})}
+  end
+
+  def move(knot = %Knot{x: x}, "R"), do: %Knot{knot | x: x + 1}
+  def move(knot = %Knot{y: y}, "U"), do: %Knot{knot | y: y + 1}
+  def move(knot = %Knot{x: x}, "L"), do: %Knot{knot | x: x - 1}
+  def move(knot = %Knot{y: y}, "D"), do: %Knot{knot | y: y - 1}
 
   # The head and tail must always be touching.
-  def chase(tail = {tx, ty}, _head = {hx, hy})
+  def chase(tail = %Knot{x: tx, y: ty}, _head = %Knot{x: hx, y: hy})
       when hx - 1 <= tx and tx <= hx + 1 and hy - 1 <= ty and ty <= hy + 1,
       do: tail
 
-  def chase(_tail = {tx, ty}, _head = {hx, hy}), do: {tx + sign(hx - tx), ty + sign(hy - ty)}
+  def chase(tail = %Knot{x: tx, y: ty}, _head = %Knot{x: hx, y: hy}),
+    do: %Knot{tail | x: tx + sign(hx - tx), y: ty + sign(hy - ty)}
 
   def sign(value) when value < 0, do: -1
   def sign(value) when value == 0, do: 0
@@ -87,44 +111,62 @@ defmodule Part1 do
 end
 ```
 
+## Part 1
+
 ```elixir
-{_h, _t, _bounds, visited} = Part1.run(steps)
+rope = Rope.new(1)
+final = Rope.run(rope, steps)
+{_h, [_t = %Rope.Knot{visited: visited}]} = rope |> Rope.run(steps)
 Enum.count(visited)
 ```
 
+## Part 2
+
+```elixir
+rope = Rope.new(9)
+final = Rope.run(rope, steps)
+{_h, tails} = rope |> Rope.run(steps)
+%Rope.Knot{visited: visited} = List.last(tails)
+Enum.count(visited)
+```
+
+## Heatmap
+
 ```elixir
 defmodule Render do
-  def heatmap(_state = {head, tail, _bounds = {x_scale, y_scale}, visited}) do
-    visited_points =
-      Enum.map(visited, fn {x, y} ->
-        %{x: x, y: y}
-      end)
+  def heatmap(_bounds = {x_scale, y_scale}, _state = {head, tails}) do
+    visited_layers =
+      for %Rope.Knot{visited: visited} <- [head | tails] do
+        visited_points =
+          Enum.map(visited, fn {x, y} ->
+            %{x: x, y: y}
+          end)
 
-    visited_layer =
-      Vl.new()
-      |> Vl.mark(:rect)
-      |> Vl.data(values: visited_points)
-      |> Vl.encode_field(:x, "x", scale: [domain: Enum.to_list(x_scale)])
-      |> Vl.encode_field(:y, "y", scale: [domain: Enum.to_list(y_scale) |> Enum.reverse()])
-
-    knot_points = [knot_point(head, "H"), knot_point(tail, "T")]
+        Vl.new()
+        |> Vl.mark(:rect)
+        |> Vl.data(values: visited_points)
+        |> Vl.encode_field(:x, "x", axis: false, scale: [domain: Enum.to_list(x_scale)])
+        |> Vl.encode_field(:y, "y",
+          axis: false,
+          scale: [domain: Enum.to_list(y_scale) |> Enum.reverse()]
+        )
+      end
 
     text_layer =
       Vl.new()
       |> Vl.mark(:text)
-      |> Vl.data(values: knot_points)
-      |> Vl.encode_field(:x, "x")
-      |> Vl.encode_field(:y, "y")
+      |> Vl.data(values: [head | tails] |> Enum.map(&Map.take(&1, [:x, :y, :text])))
+      |> Vl.encode_field(:x, "x", axis: false)
+      |> Vl.encode_field(:y, "y", axis: false)
       |> Vl.encode_field(:text, "text")
 
     Vl.new(width: 600, height: 600)
-    |> Vl.layers([visited_layer, text_layer])
+    |> Vl.layers(visited_layers ++ [text_layer])
   end
-
-  defp knot_point({x, y}, text), do: %{x: x, y: y, text: text}
 end
 ```
 
 ```elixir
-Render.heatmap(Part1.run(steps))
+bounds = Rope.bounds(steps)
+Render.heatmap(bounds, final)
 ```
