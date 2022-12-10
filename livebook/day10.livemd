@@ -19,13 +19,17 @@ input = Kino.Input.read(input) |> String.trim() |> String.split("\n")
 ## Execute
 
 ```elixir
+# Used in map_reduce, takes instruction and state, returns
+# list (of intermediate states) and new state.
 execute = fn
   "noop", {clock, reg} ->
-    # noop takes 1 instruction, leaves the register alone.
+    # noop takes 1 cycle, leaves the register alone.
     {[{clock + 1, reg}], {clock + 1, reg}}
 
   "addx " <> value, {clock, reg} ->
     value = String.to_integer(value)
+    # addx takes 2 cycles without changing the register.
+    # register is changed at the _end_ of the 2nd cycle.
     {[{clock + 1, reg}, {clock + 2, reg}], {clock + 2, reg + value}}
 end
 ```
@@ -55,11 +59,11 @@ part1 =
 pixels =
   Enum.reduce(states, "", fn
     {clock, reg}, acc when reg >= rem(clock, 40) - 2 and reg <= rem(clock, 40) ->
-      IO.puts("During cycle #{clock}, sprite is at #{reg}, draw pixel")
+      # IO.puts("During cycle #{clock}, sprite is at #{reg}, draw pixel")
       acc <> "#"
 
     {clock, reg}, acc ->
-      IO.puts("During cycle #{clock}, sprite is at #{reg}")
+      # IO.puts("During cycle #{clock}, sprite is at #{reg}")
       acc <> "."
   end)
 ```
