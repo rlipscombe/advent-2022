@@ -1,0 +1,46 @@
+# Cathode-Ray Tube
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.8.0"},
+  {:kino_vega_lite, "~> 0.1.7"},
+  {:vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Input:")
+```
+
+```elixir
+input = Kino.Input.read(input) |> String.trim() |> String.split("\n")
+```
+
+```elixir
+execute = fn
+  "noop", {clock, reg} ->
+    # noop takes 1 instruction, leaves the register alone.
+    {[{clock + 1, reg}], {clock + 1, reg}}
+
+  "addx " <> value, {clock, reg} ->
+    value = String.to_integer(value)
+    {[{clock + 1, reg}, {clock + 2, reg}], {clock + 2, reg + value}}
+end
+```
+
+```elixir
+{states, result} = Enum.map_reduce(input, {0, 1}, execute)
+states = List.flatten(states)
+
+part1 =
+  states
+  |> Enum.drop(19)
+  |> Enum.take_every(40)
+  |> Enum.take(6)
+  |> Enum.map(fn {clock, reg} -> clock * reg end)
+  |> Enum.sum()
+```
