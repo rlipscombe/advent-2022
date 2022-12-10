@@ -1,8 +1,10 @@
 # Advent of Code, 2022
 
-This year, I originally planned to do the challenges in
-[Gleam](https://gleam.run), but I seem to be back on my "at least one different
-language every day" thing. On average, anyway.
+This year, I originally planned to do the [Advent of Code](https://adventofcode.com/2022) challenges
+in [Gleam](https://gleam.run), but I seem to be back on my "at least one different language every day"
+thing.
+
+On average, anyway.
 
 I usually start with [Elixir Livebook](https://livebook.dev) because it's a
 good way to explore the problem.
