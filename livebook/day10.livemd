@@ -16,6 +16,8 @@ input = Kino.Input.textarea("Input:")
 input = Kino.Input.read(input) |> String.trim() |> String.split("\n")
 ```
 
+## Execute
+
 ```elixir
 execute = fn
   "noop", {clock, reg} ->
@@ -31,7 +33,11 @@ end
 ```elixir
 {states, result} = Enum.map_reduce(input, {0, 1}, execute)
 states = List.flatten(states)
+```
 
+## Part 1
+
+```elixir
 part1 =
   states
   |> Enum.drop(19)
@@ -40,3 +46,39 @@ part1 =
   |> Enum.map(fn {clock, reg} -> clock * reg end)
   |> Enum.sum()
 ```
+
+## Part 2
+
+```elixir
+# For each clock tick, if the register is at pixel - 1, pixel or pixel +1, then draw the pixel.
+
+pixels =
+  Enum.reduce(states, "", fn
+    {clock, reg}, acc when reg >= rem(clock, 40) - 2 and reg <= rem(clock, 40) ->
+      IO.puts("During cycle #{clock}, sprite is at #{reg}, draw pixel")
+      acc <> "#"
+
+    {clock, reg}, acc ->
+      IO.puts("During cycle #{clock}, sprite is at #{reg}")
+      acc <> "."
+  end)
+```
+
+````elixir
+display = fn pixels ->
+  String.slice(pixels, 0..39) <>
+    "\n" <>
+    String.slice(pixels, 40..79) <>
+    "\n" <>
+    String.slice(pixels, 80..119) <>
+    "\n" <>
+    String.slice(pixels, 120..159) <>
+    "\n" <>
+    String.slice(pixels, 160..199) <>
+    "\n" <>
+    String.slice(pixels, 200..239) <> "\n"
+end
+
+screen = display.(pixels)
+Kino.Markdown.new("```\n" <> screen <> "\n```\n")
+````
