@@ -1,12 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
 $path = [System.IO.Path]::Combine($PWD, "..\input11.txt")
-$rounds = 20
-function Update-Worry {
-    param($worry)
-    [int][Math]::Floor($worry / 3)
-}
-
 $lines = [System.IO.File]::ReadAllLines($path)
 
 # Parser
@@ -75,7 +69,21 @@ foreach ($line in $lines) {
 $monkeys += , $monkey
 # Write-Output $monkeys
 
+$rounds = 10000
+
+$common = 1
+foreach ($monkey in $monkeys) {
+    $common *= $monkey.Divisor
+}
+Write-Output $common
+function Update-Worry {
+    param($worry)
+    $worry % $common
+    # [int][Math]::Floor($worry / 3)
+}
+
 for ($round = 1; $round -le $rounds; $round++) {
+    if (($round % 100) -eq 0) { Write-Output ("{0} / {1}" -f $round, $rounds) }
     foreach ($monkey in $monkeys) {
         while ($monkey.Items.Length) {
             $item = $monkey.Items[0]
