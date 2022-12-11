@@ -11,7 +11,13 @@ void main(List<String> arguments) {
 
   List<Monkey> monkeys = parser.parse(input).value;
 
-  var rounds = 20;
+  // var rounds = 20;
+  // var adjustWorry = (item) => (item / 3).floor();
+
+  var common = monkeys.map((m) => m.divisor).reduce((a, b) => a * b);
+  var rounds = 10000;
+  var adjustWorry = (item) => item % common;
+
   for (var round = 1; round <= rounds; ++round) {
     for (var monkey in monkeys) {
       // print("Monkey ${monkey.id}:");
@@ -21,7 +27,7 @@ void main(List<String> arguments) {
         monkey.inspections++;
         // print("  Monkey inspects an item with a worry level of $item");
         item = monkey.operation.apply(item);
-        item = (item / 3).floor();
+        item = adjustWorry(item);
         // print(
         //     "    Monkey gets bored with item. Worry level is divided by 3 to $item.");
 
