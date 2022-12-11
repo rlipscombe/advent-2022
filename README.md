@@ -19,12 +19,13 @@ good way to explore the problem.
 - Day 8 [Treetop Tree House](https://adventofcode.com/2022/day/8): [Elixir Livebook](livebook/day08.livemd), [Dart](dart/day08/)
 - Day 9 [Rope Bridge](https://adventofcode.com/2022/day/9): [Elixir Livebook](livebook/day09.livemd)
 - Day 10 [Cathode-Ray Tube](https://adventofcode.com/2022/day/10): [Elixir Livebook](livebook/day10.livemd)
+- Day 11 [Monkey in the Middle](https://adventofcode.com/2022/day/10): [Dart](dart/day11/), [PowerShell](pwsh/day11.ps1)
 
-So far: 10 days, 11 languages.
+So far: 11 days, 12 languages.
 
 ## Language Ideas
 
-- C#, C++, Crystal, Go, Haskell, Javascript, Kotlin, Lua, Nim, OCaml, Perl, Powershell, Racket, Ruby, Scala, Squirrel, Typescript, Zig.
+- C#, C++, Crystal, Go, Haskell, Javascript, Kotlin, Lua, Nim, OCaml, Perl, Racket, Ruby, Scala, Squirrel, Typescript, Zig.
 
 ## Previous years
 
