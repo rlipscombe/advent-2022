@@ -12,7 +12,6 @@ class MonkeysDefinition extends GrammarDefinition {
               ref0(ifTrue) &
               ref0(ifFalse))
           .map((values) {
-        print(values);
         return Monkey(
             values[0], values[1], values[2], values[3], values[4], values[5]);
       });
@@ -32,9 +31,9 @@ class MonkeysDefinition extends GrammarDefinition {
         return values[1];
       });
 
-  Parser<Pred> test() =>
+  Parser<int> test() =>
       (string("Test: divisible by ").trim() & ref0(number)).map((values) {
-        return IsDivisibleBy(values[1]);
+        return values[1];
       });
 
   Parser<int> ifTrue() =>
