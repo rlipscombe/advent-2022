@@ -2,6 +2,10 @@ $ErrorActionPreference = 'Stop'
 
 $path = [System.IO.Path]::Combine($PWD, "..\input11.txt")
 $rounds = 20
+function Update-Worry {
+    param($worry)
+    [int][Math]::Floor($worry / 3)
+}
 
 $lines = [System.IO.File]::ReadAllLines($path)
 
@@ -31,21 +35,21 @@ foreach ($line in $lines) {
     elseif ($line -match 'Operation: new = old \* old') {
         $monkey.Operation = {
             param($worry)
-            Write-Output ($worry * $worry)
+            ($worry * $worry)
         }
     }
     elseif ($line -match 'Operation: new = old \+ (\d+)') {
         $value = $Matches.1
         $monkey.Operation = {
             param($worry)
-            Write-Output ($worry + $value)
+            ($worry + $value)
         }.GetNewClosure()
     }
     elseif ($line -match 'Operation: new = old \* (\d+)') {
         $value = $Matches.1
         $monkey.Operation = {
             param($worry)
-            Write-Output ($worry * $value)
+            ($worry * $value)
         }.GetNewClosure()
     }
     elseif ($line -match 'Test: divisible by (\d+)') {
@@ -82,7 +86,7 @@ for ($round = 1; $round -le $rounds; $round++) {
             $item = &$monkey.Operation $item
             # Write-Output ("...to {0}" -f $item)
 
-            $item = [int][Math]::Floor($item / 3)
+            $item = (Update-Worry $item)
             # Write-Output ("...to {0}" -f $item)
 
             $remainder = ($item % $monkey.Divisor)
