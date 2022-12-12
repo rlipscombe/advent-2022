@@ -1,0 +1,95 @@
+# Hill Climbing Algorithm
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.8.0"},
+  {:kino_vega_lite, "~> 0.1.7"},
+  {:vega_lite, "~> 0.1.6"},
+  {:libgraph, "~> 0.16.0"}
+])
+```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Input:")
+```
+
+```elixir
+input =
+  Kino.Input.read(input) |> String.trim() |> String.split("\n") |> Enum.map(&String.to_charlist/1)
+
+grid =
+  input
+  |> Enum.with_index()
+  |> Enum.reduce({%{}, nil, nil}, fn {line, row}, acc ->
+    line
+    |> Enum.with_index()
+    |> Enum.reduce(
+      acc,
+      fn
+        {?S, col}, _acc = {map, _s, e} ->
+          {Map.put(map, {row, col}, ?a), {row, col}, e}
+
+        {?E, col}, _acc = {map, s, _e} ->
+          {Map.put(map, {row, col}, ?z), s, {row, col}}
+
+        {ch, col}, _acc = {map, s, e} ->
+          {Map.put(map, {row, col}, ch), s, e}
+      end
+    )
+  end)
+```
+
+```elixir
+{map, start, end_} = grid
+
+graph =
+  Enum.reduce(map, Graph.new(type: :directed), fn {{row, col}, height}, graph ->
+    graph |> Graph.add_vertex({row, col}, pos: {row, col}, height: height)
+  end)
+
+graph =
+  Enum.reduce(map, graph, fn {{row, col}, height}, graph ->
+    neighbours =
+      [{row - 1, col}, {row, col + 1}, {row + 1, col}, {row, col - 1}]
+      |> Enum.filter(fn {r, c} ->
+        neighbour_height = Map.get(map, {r, c}, nil)
+        neighbour_height != nil and neighbour_height <= height + 1
+      end)
+
+    edges = for n <- neighbours, do: {{row, col}, n}
+
+    graph |> Graph.add_edges(edges)
+  end)
+```
+
+```elixir
+render_graph = fn graph ->
+  tmp = Path.join(System.tmp_dir!(), :crypto.strong_rand_bytes(10) |> Base.encode32())
+
+  {:ok, dot} = Graph.to_dot(graph)
+  File.write!(tmp <> ".dot", dot)
+  {"", 0} = System.cmd("/opt/homebrew/bin/dot", ["-T", "png", tmp <> ".dot", "-o", tmp <> ".png"])
+
+  png_data = File.read!(tmp <> ".png")
+  image = Kino.Image.new(png_data, :png)
+
+  # File.rm!(tmp <> ".dot")
+  # File.rm!(tmp <> ".png")
+
+  image
+end
+```
+
+```elixir
+# render_graph.(graph)
+```
+
+```elixir
+shortest = Graph.Pathfinding.dijkstra(graph, start, end_)
+```
+
+```elixir
+length(shortest) - 1
+```
