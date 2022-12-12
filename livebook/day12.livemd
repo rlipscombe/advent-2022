@@ -86,10 +86,29 @@ end
 # render_graph.(graph)
 ```
 
+## Part 1
+
 ```elixir
 shortest = Graph.Pathfinding.dijkstra(graph, start, end_)
 ```
 
 ```elixir
+length(shortest) - 1
+```
+
+## Part 2
+
+```elixir
+starts =
+  Enum.filter(map, fn
+    {_, ?a} -> true
+    _ -> false
+  end)
+  |> Enum.map(fn {rc, _} -> rc end)
+```
+
+```elixir
+paths = for start <- starts, do: Graph.Pathfinding.dijkstra(graph, start, end_)
+shortest = paths |> Enum.filter(&is_list/1) |> Enum.min_by(&length/1)
 length(shortest) - 1
 ```
