@@ -22,7 +22,7 @@ good way to explore the problem.
 - Day 11 [Monkey in the Middle](https://adventofcode.com/2022/day/11): [Dart](dart/day11/), [PowerShell](pwsh/day11.ps1)
 - Day 12 [Hill Climbing Algorithm](https://adventofcode.com/2022/day/12): [Elixir Livebook](livebook/day12.livemd)
 
-So far: 11 days, 12 languages.
+So far: 12 days, 12 languages.
 
 ## Language Ideas
 
