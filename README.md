@@ -20,10 +20,10 @@ good way to explore the problem.
 - Day 9 [Rope Bridge](https://adventofcode.com/2022/day/9): [Elixir Livebook](livebook/day09.livemd)
 - Day 10 [Cathode-Ray Tube](https://adventofcode.com/2022/day/10): [Elixir Livebook](livebook/day10.livemd)
 - Day 11 [Monkey in the Middle](https://adventofcode.com/2022/day/11): [Dart](dart/day11/), [PowerShell](pwsh/day11.ps1)
-- Day 12 [Hill Climbing Algorithm](https://adventofcode.com/2022/day/12): [Elixir Livebook](livebook/day12.livemd)
+- Day 12 [Hill Climbing Algorithm](https://adventofcode.com/2022/day/12): [Elixir Livebook](livebook/day12.livemd), [C++](cxx/day12)
 - Day 13 [Distress Signal](https://adventofcode.com/2022/day/12): [Erlang](erlang/day13.escript)
 
-So far: 13 days, 12 languages. Falling behind.
+So far: 13 days, 13 languages. Falling behind.
 
 ## Language Ideas
 
