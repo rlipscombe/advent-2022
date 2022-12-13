@@ -160,18 +160,19 @@ int main(int argc, char *argv[])
     // boost::write_graphviz(std::cout, g);
 
     // Part 1: Find the shortest path from 'S' to 'E'.
-    VertexDescriptor source = find_start(lines);
-    VertexDescriptor destination = find_end(lines);
+    {
+        VertexDescriptor source = find_start(lines);
+        VertexDescriptor destination = find_end(lines);
 
-    auto vertex_count = boost::num_vertices(g);
-    std::vector<int> distances(vertex_count);
+        auto vertex_count = boost::num_vertices(g);
+        std::vector<int> distances(vertex_count);
 
-    auto visitor = boost::make_bfs_visitor(boost::record_distances(
-        boost::make_iterator_property_map(distances.begin(), get(boost::vertex_index, g)), boost::on_tree_edge()));
-    boost::breadth_first_search(g, source, boost::visitor(visitor));
+        auto visitor = boost::make_bfs_visitor(boost::record_distances(
+            boost::make_iterator_property_map(distances.begin(), get(boost::vertex_index, g)), boost::on_tree_edge()));
+        boost::breadth_first_search(g, source, boost::visitor(visitor));
 
-    // 'distances' has all of the distances from 'S'. Look up 'E'.
-    std::cout << distances[destination] << std::endl;
-
+        // 'distances' has all of the distances from 'S'. Look up 'E'.
+        std::cout << distances[destination] << std::endl;
+    }
     return 0;
 }
