@@ -6,11 +6,62 @@
 #include <boost/graph/dijkstra_shortest_paths.hpp>
 #include <boost/graph/graphviz.hpp>
 
+using Lines = std::vector<std::string>;
+
+using Point = std::tuple<int, int>;
+using Rect = std::tuple<std::tuple<int, int>>;
+
 using VertexProperty = boost::property<boost::vertex_name_t, std::tuple<int, int>>;
 using EdgeProperty = boost::property<boost::edge_weight_t, int>;
 using Graph = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS, VertexProperty, EdgeProperty>;
 
 using VertexDescriptor = boost::graph_traits<Graph>::vertex_descriptor;
+
+int height_of(Point pt, Lines lines)
+{
+    auto [x, y] = pt;
+    std::cerr << "height_of " << x << " " << y << std::endl;
+    char ch = lines[y][x];
+    std::cerr << "..." << ch << std::endl;
+    if (ch == 'S')
+    {
+        return 'a';
+    }
+    else if (ch == 'E')
+    {
+        return 'z';
+    }
+    else
+    {
+        return ch;
+    }
+}
+
+Graph::vertex_descriptor vertex_descriptor_for(Point pt, int x_end, int y_end)
+{
+    // Gonna cheat slightly here. We know that because we're using
+    // an adjacency list with vecS, that the vertex at (x, y) has
+    // descriptor `(y * x_end) + x`.
+
+    auto [x, y] = pt;
+    return (y * x_end) + x;
+}
+
+bool is_in_bounds(Point pt, int x_end, int y_end)
+{
+    auto [x, y] = pt;
+    std::cerr << "is_in_bounds " << x << ", " << y << std::endl;
+    return x >= 0 && x < x_end && y >= 0 && y < y_end;
+}
+
+void maybe_add_edge(Point from, Point to, Lines lines, int x_end, int y_end, Graph &g)
+{
+    if (is_in_bounds(to, x_end, y_end) && height_of(to, lines) <= height_of(from, lines) + 1)
+    {
+        std::cerr << "adding edge from " << vertex_descriptor_for(from, x_end, y_end) << " to " << vertex_descriptor_for(to, x_end, y_end) << std::endl;
+        add_edge(vertex_descriptor_for(from, x_end, y_end), vertex_descriptor_for(to, x_end, y_end), g);
+    }
+}
 
 Graph create_graph(std::vector<std::string> lines)
 {
@@ -19,32 +70,36 @@ Graph create_graph(std::vector<std::string> lines)
     int x_end = std::size(lines[0]);
     int y_end = std::size(lines);
 
+    std::cerr << x_end << std::endl;
+    std::cerr << y_end << std::endl;
+
     Graph g;
 
-    for (int x = 0; x < x_end; ++x)
+    for (int y = 0; y < y_end; ++y)
     {
-        for (int y = 0; y < y_end; ++y)
+        for (int x = 0; x < x_end; ++x)
         {
             auto vertex = std::make_tuple(x, y);
-            auto v_desc = boost::add_vertex(vertex, g);
+            auto vd = boost::add_vertex(vertex, g);
+            std::cerr << "(" << x << ", " << y << ") has descriptor " << vd << std::endl;
         }
     }
 
-    // VertexDescriptor a = add_vertex(VertexPropertyType("a", white_color), g);
-    // VertexDescriptor b = add_vertex(VertexPropertyType("b", white_color), g);
-    // VertexDescriptor c = add_vertex(VertexPropertyType("c", white_color), g);
-    // VertexDescriptor d = add_vertex(VertexPropertyType("d", white_color), g);
-    // VertexDescriptor e = add_vertex(VertexPropertyType("e", white_color), g);
+    // Adding edges to "new" vertices also puts those vertices in the adjacency list,
+    // which screws up our cheat for working out the descriptors, so we add all of the vertices,
+    // and then all of the edges.
+    for (int y = 0; y < y_end; ++y)
+    {
+        for (int x = 0; x < x_end; ++x)
+        {
+            maybe_add_edge(std::make_tuple(x, y), std::make_tuple(x - 1, y), lines, x_end, y_end, g);
+            maybe_add_edge(std::make_tuple(x, y), std::make_tuple(x + 1, y), lines, x_end, y_end, g);
+            maybe_add_edge(std::make_tuple(x, y), std::make_tuple(x, y - 1), lines, x_end, y_end, g);
+            maybe_add_edge(std::make_tuple(x, y), std::make_tuple(x, y + 1), lines, x_end, y_end, g);
+        }
+    }
 
-    // add_edge(a, c, EdgePropertyType(1, black_color), g);
-    // add_edge(b, d, EdgePropertyType(1, black_color), g);
-    // add_edge(b, e, EdgePropertyType(2, black_color), g);
-    // add_edge(c, b, EdgePropertyType(5, black_color), g);
-    // add_edge(c, d, EdgePropertyType(10, black_color), g);
-    // add_edge(d, e, EdgePropertyType(4, black_color), g);
-    // add_edge(e, a, EdgePropertyType(3, black_color), g);
-    // add_edge(e, b, EdgePropertyType(7, black_color), g);
-
+    std::cerr << "created graph" << std::endl;
     return g;
 }
 
@@ -79,32 +134,11 @@ Graph create_graph(std::vector<std::string> lines)
 
 //         // std::cout << "(" << x << ", " << y << ") is " << height << std::endl;
 
-//         // NESW
-//         if (y - 1 >= 0 && lines[y - 1][x] <= height + 1)
-//         {
-//             auto n_desc = descriptors[std::make_tuple(x, y - 1)];
-//             boost::add_edge(v_desc, n_desc, g);
-//         }
-//         if (x + 1 < x_end && lines[y][x + 1] <= height + 1)
-//         {
-//             auto n_desc = descriptors[std::make_tuple(x + 1, y)];
-//             boost::add_edge(v_desc, n_desc, g);
-//         }
-//         if (y + 1 < y_end && lines[y + 1][x] <= height + 1)
-//         {
-//             auto n_desc = descriptors[std::make_tuple(x, y + 1)];
-//             boost::add_edge(v_desc, n_desc, g);
-//         }
-//         if (x - 1 >= 0 && lines[y][x - 1] <= height + 1)
-//         {
-//             auto n_desc = descriptors[std::make_tuple(x - 1, y)];
-//             boost::add_edge(v_desc, n_desc, g);
-//         }
+//
 //     }
 // }
 
-
-int    main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     if (argc != 2)
     {
