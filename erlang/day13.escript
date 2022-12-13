@@ -5,9 +5,12 @@
 main([Path]) ->
     {ok, Bytes} = file:read_file(Path),
     Pairs = parse_pairs(Bytes),
-    io:format("~p~n", [Pairs]),
+    % io:format("~p~n", [Pairs]),
+    part1(Pairs),
+    part2(Pairs),
+    ok.
 
-    % Result = [compare(A, B) || {A, B} <- Pairs],
+part1(Pairs) ->
     Sum = lists:foldl(
         fun({I, {A, B}}, Acc) ->
             io:format("~B: Compare ~p vs ~p~n", [I, A, B]),
@@ -23,6 +26,42 @@ main([Path]) ->
     ),
     io:format("sum: ~B~n", [Sum]),
     ok.
+
+part2(Pairs) ->
+    % Can't be bothered to rewrite the parser, so just jam them back together again.
+    Packets0 = combine_pairs(Pairs),
+    Div2 = [[2]],
+    Div6 = [[6]],
+    Packets = [Div2, Div6 | Packets0],
+    Sorted = lists:sort(
+        fun(A, B) ->
+            case compare(A, B) of
+                correct -> true;
+                _ -> false
+            end
+        end,
+        Packets
+    ),
+    io:format("~p~n", [Sorted]),
+    Pos2 = search(Div2, Sorted),
+    Pos6 = search(Div6, Sorted),
+    io:format("~B * ~B = ~B~n", [Pos2, Pos6, Pos2 * Pos6]),
+    ok.
+
+search(Item, List) ->
+    search(Item, List, 1).
+
+search(Item, [Item | _List], Index) -> Index;
+search(Item, [_ | List], Index) -> search(Item, List, Index + 1).
+
+combine_pairs(Pairs) ->
+    combine_pairs(Pairs, []).
+
+combine_pairs([{A, B} | Rest], Acc) ->
+    combine_pairs(Rest, [A, B | Acc]);
+combine_pairs([], Acc) ->
+    % doesn't need reversing; we're going to sort it anyway.
+    Acc.
 
 parse_pairs(Bytes) ->
     parse_pairs_2(binary:split(Bytes, <<"\n\n">>, [global]), []).
