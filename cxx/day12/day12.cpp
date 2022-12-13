@@ -94,6 +94,47 @@ Graph create_graph(std::vector<std::string> lines)
     return g;
 }
 
+std::vector<VertexDescriptor> get_path(std::vector<VertexDescriptor> predecessors, VertexDescriptor source, VertexDescriptor destination)
+{
+    std::vector<VertexDescriptor> path;
+    VertexDescriptor current = destination;
+    while (current != source)
+    {
+        path.push_back(current);
+        current = predecessors[current];
+    }
+    path.push_back(source);
+    return path;
+}
+
+VertexDescriptor find_cell(Lines lines, char ch)
+{
+    int x_end = std::size(lines[0]);
+    int y_end = std::size(lines);
+    for (int y = 0; y < y_end; ++y)
+    {
+        for (int x = 0; x < x_end; ++x)
+        {
+            if (lines[y][x] == ch)
+            {
+                return vertex_descriptor_for(std::make_tuple(x, y), x_end, y_end);
+            }
+        }
+    }
+
+    return -1;
+}
+
+VertexDescriptor find_start(Lines lines)
+{
+    return find_cell(lines, 'S');
+}
+
+VertexDescriptor find_end(Lines lines)
+{
+    return find_cell(lines, 'E');
+}
+
 int main(int argc, char *argv[])
 {
     if (argc != 2)
@@ -108,29 +149,31 @@ int main(int argc, char *argv[])
     std::string line;
     while (std::getline(f, line))
     {
-        // std::cout << line << std::endl;
         lines.push_back(line);
     }
 
     Graph g = create_graph(lines);
 
-    boost::write_graphviz(std::cout, g);
+    // boost::write_graphviz(std::cout, g);
 
-    // // Find paths from end back to start.
-    // std::vector<Graph::vertex_descriptor> p(num_vertices(g));
-    // std::vector<int> d(num_vertices(g));
-    // auto w = boost::make_constant_property<boost::edge_weight_t>(1);
+    VertexDescriptor source = find_start(lines);
+    VertexDescriptor destination = find_end(lines);
+    std::cerr << "Starting at " << source << "; looking for " << destination << std::endl;
 
-    // boost::dijkstra_shortest_paths(
-    //     g, start_desc,
-    //     boost::predecessor_map(boost::make_iterator_property_map(p.begin(), get(boost::vertex_index, g)))
-    //         .distance_map(boost::make_iterator_property_map(d.begin(), get(boost::vertex_index, g)))
-    //         .weight_map(get(boost::edge_weight, g)));
+    auto vertex_count = boost::num_vertices(g);
+    std::vector<VertexDescriptor> predecessors(vertex_count);
+    std::vector<int> distances(vertex_count);
+    auto props =
+        boost::predecessor_map(boost::make_iterator_property_map(predecessors.begin(), get(boost::vertex_index, g)))
+            .distance_map(boost::make_iterator_property_map(distances.begin(), get(boost::vertex_index, g)));
+    boost::dijkstra_shortest_paths(g, source, props);
 
-    // for (auto it = d.begin(); it != d.end(); ++it)
+    auto path = get_path(predecessors, source, destination);
+    // for (auto it = path.begin(); it != path.end(); ++it)
     // {
     //     std::cout << *it << std::endl;
     // }
 
+    std::cout << std::size(path) - 1 << std::endl;
     return 0;
 }
