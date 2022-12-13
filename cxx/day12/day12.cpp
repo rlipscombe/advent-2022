@@ -174,5 +174,52 @@ int main(int argc, char *argv[])
         // 'distances' has all of the distances from 'S'. Look up 'E'.
         std::cout << distances[destination] << std::endl;
     }
+
+    // Part 2: Find the shortest path from any 'a' to 'E'.
+    // The smart thing to do would be to reverse the search, but I can't be bothered.
+    {
+        std::vector<VertexDescriptor> sources;
+
+        int x_end = std::size(lines[0]);
+        int y_end = std::size(lines);
+        for (int y = 0; y < y_end; ++y)
+        {
+            for (int x = 0; x < x_end; ++x)
+            {
+                auto ch = lines[y][x];
+                if (ch == 'S' || ch == 'a')
+                {
+                    sources.push_back(vertex_descriptor_for(std::make_tuple(x, y), x_end, y_end));
+                }
+            }
+        }
+
+        std::vector<int> path_distances;
+        VertexDescriptor destination = find_end(lines);
+
+        for (auto it = sources.begin(); it != sources.end(); ++it)
+        {
+            VertexDescriptor source = *it;
+
+            auto vertex_count = boost::num_vertices(g);
+            std::vector<int> distances(vertex_count);
+
+            auto visitor = boost::make_bfs_visitor(boost::record_distances(
+                boost::make_iterator_property_map(distances.begin(), get(boost::vertex_index, g)), boost::on_tree_edge()));
+            boost::breadth_first_search(g, source, boost::visitor(visitor));
+
+            // 'distances' has all of the distances from 'S'. Look up 'E'.
+            // std::cout << distances[destination] << std::endl;
+            auto distance = distances[destination];
+            if (distance != 0)
+            {
+                path_distances.push_back(distance);
+            }
+        }
+
+        int shortest = *std::min_element(path_distances.begin(), path_distances.end());
+
+        std::cout << shortest << std::endl;
+    }
     return 0;
 }
