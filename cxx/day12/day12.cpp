@@ -117,6 +117,7 @@ VertexDescriptor find_cell(Lines lines, char ch)
         {
             if (lines[y][x] == ch)
             {
+                std::cout << "Found " << ch << " at " << "(" << x << ", " << y << ")" << std::endl;
                 return vertex_descriptor_for(std::make_tuple(x, y), x_end, y_end);
             }
         }
