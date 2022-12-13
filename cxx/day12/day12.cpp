@@ -66,9 +66,6 @@ Graph create_graph(std::vector<std::string> lines)
     int x_end = std::size(lines[0]);
     int y_end = std::size(lines);
 
-    std::cerr << x_end << std::endl;
-    std::cerr << y_end << std::endl;
-
     Graph g;
 
     for (int y = 0; y < y_end; ++y)
