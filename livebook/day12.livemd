@@ -7,6 +7,9 @@ Mix.install([
   {:vega_lite, "~> 0.1.6"},
   {:libgraph, "~> 0.16.0"}
 ])
+
+alias VegaLite, as: Vl
+:ok
 ```
 
 ## Input
@@ -94,6 +97,50 @@ shortest = Graph.Pathfinding.dijkstra(graph, start, end_)
 
 ```elixir
 length(shortest) - 1
+```
+
+```elixir
+shortest
+```
+
+```elixir
+render_map = fn map, shortest ->
+  heights = map |> Enum.map(fn {{row, col}, height} -> %{x: col, y: row, height: height} end)
+
+  path =
+    shortest
+    |> Enum.map(fn {row, col} ->
+      text = [Map.get(map, {row, col})] |> List.to_string()
+      %{x: col, y: row, label: text}
+    end)
+
+  height_layer =
+    Vl.new()
+    |> Vl.mark(:rect)
+    |> Vl.data(values: heights)
+    |> Vl.encode_field(:x, "x")
+    |> Vl.encode_field(:y, "y")
+    |> Vl.encode_field(:color, "height",
+      type: :ordinal,
+      legend: nil,
+      scale: [scheme: "greens"]
+    )
+
+  shortest_layer =
+    Vl.new()
+    |> Vl.mark(:text)
+    |> Vl.data(values: path)
+    |> Vl.encode_field(:x, "x")
+    |> Vl.encode_field(:y, "y")
+    |> Vl.encode_field(:text, "label")
+
+  Vl.new(width: 600, height: 600)
+  |> Vl.layers([height_layer, shortest_layer])
+end
+```
+
+```elixir
+render_map.(map, shortest)
 ```
 
 ## Part 2
