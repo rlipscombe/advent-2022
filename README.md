@@ -23,7 +23,7 @@ good way to explore the problem.
 - Day 12 [Hill Climbing Algorithm](https://adventofcode.com/2022/day/12): [Elixir Livebook](livebook/day12.livemd), [C++](cxx/day12)
 - Day 13 [Distress Signal](https://adventofcode.com/2022/day/12): [Erlang](erlang/day13.escript)
 
-So far: 13 days, 13 languages. Falling behind.
+So far: 13 days, 13 languages.
 
 ## Language Ideas
 
