@@ -27,7 +27,7 @@ So far: 13 days, 13 languages.
 
 ## Language Ideas
 
-- C#, C++, Crystal, Go, Haskell, Javascript, Kotlin, Lua, Nim, OCaml, Perl, Racket, Ruby, Scala, Squirrel, Typescript, Zig.
+- C#, Crystal, Go, Haskell, Javascript, Kotlin, Lua, Nim, OCaml, Perl, Racket, Ruby, Scala, Squirrel, Typescript, Zig.
 
 ## Previous years
 
