@@ -89,6 +89,14 @@ end
 # render_graph.(graph)
 ```
 
+```elixir
+Graph.edges(graph) |> Enum.count()
+```
+
+```elixir
+Graph.vertices(graph) |> Enum.count()
+```
+
 ## Part 1
 
 ```elixir
