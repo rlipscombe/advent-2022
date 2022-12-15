@@ -1,0 +1,125 @@
+# Regolith Reservoir
+
+```elixir
+Mix.install([
+  {:kino, "~> 0.8.0"},
+  {:kino_vega_lite, "~> 0.1.7"},
+  {:vega_lite, "~> 0.1.6"}
+])
+
+alias VegaLite, as: Vl
+:ok
+```
+
+## Input
+
+```elixir
+input = Kino.Input.textarea("Input:")
+```
+
+```elixir
+input =
+  Kino.Input.read(input)
+  |> String.trim()
+  |> String.split("\n")
+  |> Enum.map(fn s ->
+    String.split(s, " -> ", trim: true)
+    |> Enum.map(fn t ->
+      String.split(t, ",") |> Enum.map(&String.to_integer/1)
+    end)
+    |> Enum.map(&List.to_tuple/1)
+  end)
+```
+
+```elixir
+grid =
+  Enum.reduce(input, %{{500, 0} => :hole}, fn path, acc ->
+    Enum.chunk_every(path, 2, 1, :discard)
+    |> Enum.reduce(acc, fn
+      [{x0, y}, {x1, y}], acc when x0 <= x1 ->
+        Enum.reduce(x0..x1, acc, &Map.put(&2, {&1, y}, :rock))
+
+      [{x0, y}, {x1, y}], acc when x0 > x1 ->
+        Enum.reduce(x0..x1//-1, acc, &Map.put(&2, {&1, y}, :rock))
+
+      [{x, y0}, {x, y1}], acc when y0 <= y1 ->
+        Enum.reduce(y0..y1, acc, &Map.put(&2, {x, &1}, :rock))
+
+      [{x, y0}, {x, y1}], acc when y0 > y1 ->
+        Enum.reduce(y0..y1//-1, acc, &Map.put(&2, {x, &1}, :rock))
+    end)
+  end)
+
+:ok
+```
+
+```elixir
+{{{x_min, _}, _}, {{x_max, _}, _}} = Enum.min_max_by(grid, fn {{x, _}, _} -> x end)
+{{{_, y_min}, _}, {{_, y_max}, _}} = Enum.min_max_by(grid, fn {{_, y}, _} -> y end)
+```
+
+```elixir
+render = fn grid, x_min, x_max, y_min, y_max ->
+  for y <- y_min..y_max do
+    line = ""
+
+    line =
+      for x <- x_min..x_max do
+        case Map.get(grid, {x, y}) do
+          nil -> ?.
+          :hole -> ?+
+          :rock -> ?#
+          :sand -> ?o
+        end
+      end
+
+    IO.puts(line)
+  end
+
+  :ok
+end
+```
+
+```elixir
+render.(grid, x_min, x_max, y_min, y_max)
+```
+
+```elixir
+defmodule Physics do
+  def drop(sand = {_x, y}, grid, y_max) when y <= y_max do
+    case next(sand, grid) do
+      {:cont, sand} -> drop(sand, grid, y_max)
+      {:halt, sand} -> {:cont, sand}
+    end
+  end
+
+  def drop(sand, _grid, _y_max) do
+    :halt
+  end
+
+  def next(_sand = {x, y}, grid) do
+    cond do
+      Map.get(grid, {x, y + 1}) == nil -> {:cont, {x, y + 1}}
+      Map.get(grid, {x - 1, y + 1}) == nil -> {:cont, {x - 1, y + 1}}
+      Map.get(grid, {x + 1, y + 1}) == nil -> {:cont, {x + 1, y + 1}}
+      true -> {:halt, {x, y}}
+    end
+  end
+end
+```
+
+```elixir
+{count, grid} =
+  Stream.iterate(1, &(&1 + 1))
+  |> Enum.reduce_while(grid, fn count, grid ->
+    sand = {500, 0}
+
+    case Physics.drop(sand, grid, y_max) do
+      :halt -> {:halt, {count - 1, grid}}
+      {:cont, sand} -> {:cont, Map.put(grid, sand, :sand)}
+    end
+  end)
+
+render.(grid, x_min, x_max, y_min, y_max)
+count
+```
