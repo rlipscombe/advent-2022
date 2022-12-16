@@ -32,7 +32,7 @@ input =
 ```
 
 ```elixir
-grid =
+create_grid = fn input ->
   Enum.reduce(input, %{{500, 0} => :hole}, fn path, acc ->
     Enum.chunk_every(path, 2, 1, :discard)
     |> Enum.reduce(acc, fn
@@ -49,17 +49,16 @@ grid =
         Enum.reduce(y0..y1//-1, acc, &Map.put(&2, {x, &1}, :rock))
     end)
   end)
+end
+```
 
+```elixir
+grid = create_grid.(input)
 :ok
 ```
 
 ```elixir
-{{{x_min, _}, _}, {{x_max, _}, _}} = Enum.min_max_by(grid, fn {{x, _}, _} -> x end)
-{{{_, y_min}, _}, {{_, y_max}, _}} = Enum.min_max_by(grid, fn {{_, y}, _} -> y end)
-```
-
-```elixir
-render = fn grid, x_min, x_max, y_min, y_max ->
+render = fn grid, {{x_min, x_max}, {y_min, y_max}} ->
   for y <- y_min..y_max do
     line = ""
 
@@ -81,7 +80,8 @@ end
 ```
 
 ```elixir
-render.(grid, x_min, x_max, y_min, y_max)
+bounds = Physics.bounds(grid)
+render.(grid, bounds)
 ```
 
 ```elixir
@@ -93,7 +93,7 @@ defmodule Physics do
     end
   end
 
-  def drop(sand, _grid, _y_max) do
+  def drop(_sand, _grid, _y_max) do
     :halt
   end
 
@@ -105,21 +105,61 @@ defmodule Physics do
       true -> {:halt, {x, y}}
     end
   end
+
+  def bounds(grid) do
+    {{{x_min, _}, _}, {{x_max, _}, _}} = Enum.min_max_by(grid, fn {{x, _}, _} -> x end)
+    {{{_, y_min}, _}, {{_, y_max}, _}} = Enum.min_max_by(grid, fn {{_, y}, _} -> y end)
+    {{x_min, x_max}, {y_min, y_max}}
+  end
+
+  def pour(grid) do
+    {{_, _}, {_, y_max}} = bounds(grid)
+
+    Stream.iterate(1, &(&1 + 1))
+    |> Enum.reduce_while(grid, fn count, grid ->
+      sand = {500, 0}
+
+      case drop(sand, grid, y_max) do
+        :halt -> {:halt, {count - 1, grid}}
+        # part 2
+        {:cont, _sand = {500, 0}} -> {:halt, {count, grid}}
+        # part 1
+        {:cont, sand} -> {:cont, Map.put(grid, sand, :sand)}
+      end
+    end)
+  end
 end
 ```
 
+## Part 1
+
 ```elixir
-{count, grid} =
-  Stream.iterate(1, &(&1 + 1))
-  |> Enum.reduce_while(grid, fn count, grid ->
-    sand = {500, 0}
+{count, grid} = Physics.pour(grid)
+render.(grid, bounds)
+count
+```
 
-    case Physics.drop(sand, grid, y_max) do
-      :halt -> {:halt, {count - 1, grid}}
-      {:cont, sand} -> {:cont, Map.put(grid, sand, :sand)}
-    end
+## Part 2
+
+```elixir
+add_floor = fn grid ->
+  {{x_min, x_max}, {y_min, y_max}} = Physics.bounds(grid)
+  height = y_max - y_min
+
+  Enum.reduce((x_min - height)..(x_max + height), grid, fn x, grid ->
+    Map.put(grid, {x, y_max + 2}, :rock)
   end)
+end
 
-render.(grid, x_min, x_max, y_min, y_max)
+grid = create_grid.(input)
+grid = add_floor.(grid)
+
+bounds = Physics.bounds(grid)
+render.(grid, bounds)
+```
+
+```elixir
+{count, grid} = Physics.pour(grid)
+render.(grid, bounds)
 count
 ```
